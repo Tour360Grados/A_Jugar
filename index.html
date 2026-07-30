@@ -92,14 +92,26 @@ function renderizarRadar(historialMuestra) {
 
       if (sugerenciaActual.length > 0) {
         const valHist = verificarUnicidad(sugerenciaActual);
+        const textoSeleccion = sugerenciaActual.join(', ');
+        const textoValHist = valHist.repetido ? `⚠️ Salió antes en sorteo #${valHist.sorteoEncontrado}` : `✅ ¡Nunca ha salido!`;
+        const colorValHist = valHist.repetido ? '#ef4444' : '#22c55e';
+        const strSugerenciaUnida = sugerenciaActual.join(',');
+
+        let botonGuardarHtml = '';
+        if (sugerenciaActual.length === 6) {
+          botonGuardarHtml = `<button class="btn-action" style="background: #10b981; font-size: 0.68rem; padding: 6px; margin: 0;" onclick="guardarSugerenciaDirecta('${strSugerenciaUnida}')">💾 Guardar Boleto Actual</button>`;
+        } else {
+          botonGuardarHtml = `<div style="font-size: 0.6rem; color: #eab308; text-align: center;">Selecciona ${6 - sugerenciaActual.length} número(s) más para guardar</div>`;
+        }
+
         controlesSugerenciaHtml += `
           <div style="font-size: 0.65rem; color: #10b981; font-weight: bold; text-align: center; margin-top: 2px;">
-            ✨ Selección (${sugerenciaActual.length}/6): [ ${sugerenciaActual.join(', ')} ]
+            ✨ Selección (${sugerenciaActual.length}/6): [ ${textoSeleccion} ]
           </div>
-          <div style="font-size: 0.62rem; text-align: center; color: ${valHist.repetido ? '#ef4444' : '#22c55e'};">
-            ${valHist.repetido ? `⚠️ Salió antes en sorteo #${valHist.sorteoEncontrado}` : `✅ ¡Nunca ha salido!`}
+          <div style="font-size: 0.62rem; text-align: center; color: ${colorValHist};">
+            ${textoValHist}
           </div>
-          ${sugerenciaActual.length === 6 ? `<button class="btn-action" style="background: #10b981; font-size: 0.68rem; padding: 6px; margin: 0;" onclick="guardarSugerenciaDirecta('${sugerenciaActual.join(',')}')">💾 Guardar Boleto Actual</button>` : `<div style="font-size: 0.6rem; color: #eab308; text-align: center;">Selecciona ${6 - sugerenciaActual.length} número(s) más para guardar</div>`}
+          ${botonGuardarHtml}
           <button class="btn-action" style="background: #64748b; font-size: 0.68rem; padding: 6px; margin: 0;" onclick="limpiarSugerenciaRadar()">🧹 Limpiar Selección</button>
         `;
       }
@@ -489,6 +501,3 @@ function renderizarRadar(historialMuestra) {
       await cargarDatosCompletos();
       setTimeout(mostrarPistaZoomMovil, 1200);
     });
-  </script>
-</body>
-</html>
