@@ -24,9 +24,32 @@
             align-items: center;
             box-shadow: 0 2px 5px rgba(0,0,0,0.1);
         }
+        .logo-container {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
         header h1 {
             margin: 0;
             font-size: 20px;
+        }
+        /* Estilos de las 6 esferas estilo Melate */
+        .melate-ball {
+            display: inline-flex;
+            justify-content: center;
+            align-items: center;
+            width: 28px;
+            height: 28px;
+            background: radial-gradient(circle at 30% 30%, #ef4444, #991b1b);
+            color: white;
+            border-radius: 50%;
+            font-size: 13px;
+            font-weight: bold;
+            box-shadow: inset -2px -2px 4px rgba(0,0,0,0.5), 0 2px 4px rgba(0,0,0,0.3);
+        }
+        .balls-group {
+            display: flex;
+            gap: 5px;
         }
         .user-panel {
             display: flex;
@@ -125,9 +148,19 @@
 
     <!-- Barra Superior -->
     <header>
-        <h1>¡A Jugar! 🎰</h1>
+        <div class="logo-container">
+            <h1>¡A Jugar!</h1>
+            <div class="balls-group">
+                <span class="melate-ball">1</span>
+                <span class="melate-ball">2</span>
+                <span class="melate-ball">3</span>
+                <span class="melate-ball">4</span>
+                <span class="melate-ball">5</span>
+                <span class="melate-ball">6</span>
+            </div>
+        </div>
         <div class="user-panel" id="header-user-panel">
-            <button onclick="openAuthModal()" style="padding: 6px 15px; font-size: 13px; width: auto;">Iniciar Sesión</button>
+            <!-- Vacío o datos de sesión -->
         </div>
     </header>
 
@@ -151,7 +184,7 @@
     <div class="main-container" id="app-view">
         <div class="card">
             <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
-                <h2 id="app-title" style="margin: 0;">Panel de Control</h2>
+                <h2 style="margin: 0;">Panel de Control</h2>
                 <span class="badge" id="current-plan-badge">PLAN: FREE</span>
             </div>
             <p>Bienvenido a tu entorno de trabajo estadístico. Aquí tienes acceso a los módulos habilitados para tu cuenta.</p>
@@ -212,7 +245,6 @@
             window.scrollTo({ top: 0, behavior: 'smooth' });
         }
 
-        // Verificar sesión al cargar la página
         async function checkUser() {
             try {
                 const { data: { session }, error } = await supabase.auth.getSession();
@@ -227,9 +259,7 @@
                     `;
                     loadUserTier(session.user.id);
                 } else {
-                    panel.innerHTML = `
-                        <button onclick="openAuthModal()" style="padding: 6px 15px; font-size: 13px; width: auto;">Iniciar Sesión</button>
-                    `;
+                    panel.innerHTML = '';
                 }
             } catch (err) {
                 console.error('Error de sesión:', err.message);
@@ -272,7 +302,7 @@
             } else {
                 closeAuthModal();
                 checkUser();
-                enterApp('ORO / PREMIUM'); // O el nivel que detecte Supabase
+                enterApp('ORO / PREMIUM');
             }
         }
 
