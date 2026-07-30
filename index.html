@@ -37,7 +37,7 @@
             letter-spacing: 0.5px;
         }
         
-        /* Estilo mejorado: Esferas 3D estilo Melate con brillo */
+        /* Esferas 3D estilo Melate con brillo */
         .balls-group {
             display: flex;
             gap: 8px;
@@ -60,7 +60,6 @@
             position: relative;
             overflow: hidden;
         }
-        /* Efecto de brillo superior */
         .melate-ball::after {
             content: '';
             position: absolute;
@@ -127,7 +126,7 @@
             font-size: 12px;
             font-weight: bold;
         }
-        /* Estilos del Modal de Login */
+        /* Modal de Login */
         .modal {
             display: none;
             position: fixed;
@@ -329,8 +328,6 @@
                 enterApp('ORO / PREMIUM');
             }
         }
-
-        async* signOut() {} // placeholder
 
         async function signOut() {
             await supabase.auth.signOut();
