@@ -23,34 +23,56 @@
             justify-content: space-between;
             align-items: center;
             box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+            flex-wrap: wrap;
+            gap: 15px;
         }
         .logo-container {
             display: flex;
             align-items: center;
-            gap: 12px;
+            gap: 15px;
         }
         header h1 {
             margin: 0;
-            font-size: 20px;
+            font-size: 22px;
+            letter-spacing: 0.5px;
         }
-        /* Estilos de las 6 esferas estilo Melate */
+        
+        /* Estilo mejorado: Esferas 3D estilo Melate con brillo */
+        .balls-group {
+            display: flex;
+            gap: 8px;
+        }
         .melate-ball {
             display: inline-flex;
             justify-content: center;
             align-items: center;
-            width: 28px;
-            height: 28px;
-            background: radial-gradient(circle at 30% 30%, #ef4444, #991b1b);
+            width: 32px;
+            height: 32px;
+            background: radial-gradient(circle at 35% 35%, #ff5252 0%, #d32f2f 55%, #8b0000 100%);
             color: white;
             border-radius: 50%;
-            font-size: 13px;
+            font-size: 14px;
             font-weight: bold;
-            box-shadow: inset -2px -2px 4px rgba(0,0,0,0.5), 0 2px 4px rgba(0,0,0,0.3);
+            text-shadow: 0 1px 2px rgba(0,0,0,0.6);
+            box-shadow: inset 0 3px 6px rgba(255,255,255,0.5), 
+                        inset 0 -4px 6px rgba(0,0,0,0.6), 
+                        0 4px 8px rgba(0,0,0,0.4);
+            position: relative;
+            overflow: hidden;
         }
-        .balls-group {
-            display: flex;
-            gap: 5px;
+        /* Efecto de brillo superior */
+        .melate-ball::after {
+            content: '';
+            position: absolute;
+            top: 4px;
+            left: 6px;
+            width: 12px;
+            height: 6px;
+            background: rgba(255, 255, 255, 0.55);
+            border-radius: 50%;
+            transform: rotate(-30deg);
         }
+
         .user-panel {
             display: flex;
             align-items: center;
@@ -77,23 +99,25 @@
             box-sizing: border-box;
         }
         button {
-            padding: 10px 20px;
+            padding: 12px 20px;
             border: none;
-            border-radius: 4px;
+            border-radius: 6px;
             background-color: #2563eb;
             color: white;
             font-weight: bold;
             cursor: pointer;
             width: 100%;
+            font-size: 15px;
+            transition: background-color 0.2s;
         }
         button:hover {
             background-color: #1d4ed8;
         }
         .secondary-btn {
-            background-color: #4b5563;
+            background-color: #059669;
         }
         .secondary-btn:hover {
-            background-color: #374151;
+            background-color: #047857;
         }
         .badge {
             background-color: #dbeafe;
@@ -160,7 +184,7 @@
             </div>
         </div>
         <div class="user-panel" id="header-user-panel">
-            <!-- Vacío o datos de sesión -->
+            <!-- Dinámico -->
         </div>
     </header>
 
@@ -174,7 +198,7 @@
                 <h3>📊 Acceso a la Plataforma</h3>
                 <p>Explora las herramientas base de forma gratuita o suscríbete a un nivel superior para desbloquear funciones de predicción avanzada.</p>
                 
-                <button onclick="enterApp('FREE')" class="secondary-btn" style="margin-bottom: 10px; background-color: #059669;">Continuar con Plan Free (Acceso Libre)</button>
+                <button onclick="enterApp('FREE')" class="secondary-btn" style="margin-bottom: 12px;">Continuar con Plan Free (Acceso Libre)</button>
                 <button onclick="openAuthModal()">Iniciar Sesión / Registrarse para Plan Oro o Premium</button>
             </div>
         </div>
@@ -192,7 +216,7 @@
             <div style="background: #f0fdf4; padding: 20px; border-radius: 6px; border: 1px solid #bbf7d0;">
                 <h3 style="color: #166534; margin-top: 0;">🎲 Módulos de Sorteos Activos</h3>
                 <p style="color: #15803d;">Selecciona una herramienta para comenzar a procesar tus combinaciones y frecuencias.</p>
-                <button onclick="goBackToLanding()" class="secondary-btn" style="width: auto; margin-top: 10px; background-color: #64748b;">Regresar a Inicio</button>
+                <button onclick="goBackToLanding()" style="width: auto; margin-top: 10px; background-color: #64748b;">Regresar a Inicio</button>
             </div>
         </div>
     </div>
@@ -205,7 +229,7 @@
             <input type="email" id="email" placeholder="Correo electrónico">
             <input type="password" id="password" placeholder="Contraseña">
             <button onclick="signIn()" style="margin-top: 5px;">Iniciar Sesión</button>
-            <button onclick="signUp()" class="secondary-btn" style="margin-top: 5px;">Registrarse</button>
+            <button onclick="signUp()" class="secondary-btn" style="margin-top: 5px; background-color: #4b5563;">Registrarse</button>
             <div id="status-msg"></div>
         </div>
     </div>
@@ -255,7 +279,7 @@
                 if (session) {
                     panel.innerHTML = `
                         <span style="font-size: 14px;">${session.user.email}</span>
-                        <button onclick="signOut()" class="secondary-btn" style="padding: 5px 10px; font-size: 12px; width: auto;">Cerrar Sesión</button>
+                        <button onclick="signOut()" style="padding: 5px 10px; font-size: 12px; width: auto; background-color: #4b5563;">Cerrar Sesión</button>
                     `;
                     loadUserTier(session.user.id);
                 } else {
@@ -305,6 +329,8 @@
                 enterApp('ORO / PREMIUM');
             }
         }
+
+        async* signOut() {} // placeholder
 
         async function signOut() {
             await supabase.auth.signOut();
