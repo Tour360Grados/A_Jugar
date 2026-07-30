@@ -1,529 +1,494 @@
-<!DOCTYPE html>
-<html lang="es">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>¡A Jugar! - Estadísticas y Análisis de Lotería</title>
-    
-    <!-- SDK de Supabase -->
-    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+function renderizarRadar(historialMuestra) {
+      const container = document.getElementById('radar-ticket-container');
+      if (!container || !historialMuestra || historialMuestra.length === 0) return;
 
-    <style>
-        body {
-            font-family: Arial, sans-serif;
-            background-color: #0f172a;
-            color: #f8fafc;
-            margin: 0;
-            padding: 0;
-            display: flex;
-            flex-direction: column;
-            min-height: 100vh;
-        }
-        header {
-            background-color: #1e293b;
-            padding: 15px 30px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.3);
-            flex-wrap: wrap;
-            gap: 15px;
-        }
-        .logo-container {
-            display: flex;
-            align-items: center;
-            gap: 15px;
-        }
-        header h1 {
-            margin: 0;
-            font-size: 22px;
-            letter-spacing: 0.5px;
-        }
-        
-        /* Esferas 3D estilo Melate con brillo */
-        .balls-group {
-            display: flex;
-            gap: 6px;
-        }
-        .melate-ball {
-            display: inline-flex;
-            justify-content: center;
-            align-items: center;
-            width: 28px;
-            height: 28px;
-            background: radial-gradient(circle at 35% 35%, #ff5252 0%, #d32f2f 55%, #8b0000 100%);
-            color: white;
-            border-radius: 50%;
-            font-size: 13px;
-            font-weight: bold;
-            text-shadow: 0 1px 2px rgba(0,0,0,0.6);
-            box-shadow: inset 0 2px 4px rgba(255,255,255,0.5), 
-                        inset 0 -3px 4px rgba(0,0,0,0.6), 
-                        0 3px 6px rgba(0,0,0,0.4);
-            position: relative;
-            overflow: hidden;
-        }
-        .melate-ball::after {
-            content: '';
-            position: absolute;
-            top: 3px;
-            left: 5px;
-            width: 10px;
-            height: 5px;
-            background: rgba(255, 255, 255, 0.55);
-            border-radius: 50%;
-            transform: rotate(-30deg);
-        }
+      const conteo = {};
+      for (let i = 1; i <= maxNumActual; i++) conteo[i] = 0;
 
-        .user-panel {
-            display: flex;
-            align-items: center;
-            gap: 15px;
-        }
-        .app-container {
-            max-width: 950px;
-            margin: 20px auto;
-            padding: 0 15px;
-            flex: 1;
-            width: 100%;
-            box-sizing: border-box;
-        }
-        .status-bar {
-            text-align: center;
-            font-size: 14px;
-            margin-bottom: 15px;
-            color: #94a3b8;
-        }
-        .status-bar span {
-            color: #38bdf8;
-            font-weight: bold;
-        }
-        
-        /* Pestañas principales */
-        .nav-tabs {
-            display: flex;
-            justify-content: center;
-            gap: 8px;
-            margin-bottom: 15px;
-            flex-wrap: wrap;
-        }
-        .tab-btn {
-            background: #1e293b;
-            color: #94a3b8;
-            border: 1px solid #334155;
-            padding: 8px 16px;
-            border-radius: 6px;
-            cursor: pointer;
-            font-weight: bold;
-            font-size: 13px;
-            transition: all 0.2s;
-        }
-        .tab-btn.active {
-            background: #3b82f6;
-            color: white;
-            border-color: #3b82f6;
-        }
+      historialMuestra.forEach(sorteo => {
+        const nums = extraerNumeros(sorteo);
+        nums.forEach(n => { if (conteo[n] !== undefined) conteo[n]++; });
+      });
 
-        /* Pestañas secundarias en cuadrícula uniforme para evitar desorden en móviles */
-        .sub-tabs {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(110px, 1fr));
-            gap: 8px;
-            margin-bottom: 25px;
-        }
-        .sub-tab-btn {
-            background: #1e293b;
-            color: #cbd5e1;
-            border: 1px solid #334155;
-            padding: 8px 10px;
-            border-radius: 6px;
-            cursor: pointer;
-            font-size: 12px;
-            text-align: center;
-            font-weight: bold;
-            transition: all 0.2s;
-        }
-        .sub-tab-btn.active {
-            background: #0f172a;
-            border-color: #475569;
-            color: #38bdf8;
-        }
-        .sub-tab-btn:hover {
-            border-color: #38bdf8;
-        }
-        
-        .card-section {
-            background: #1e293b;
-            border-radius: 8px;
-            padding: 20px;
-            box-shadow: 0 4px 10px rgba(0,0,0,0.2);
-            border: 1px solid #334155;
-        }
-        .section-title {
-            font-size: 16px;
-            font-weight: bold;
-            color: #38bdf8;
-            margin-bottom: 15px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-        .draw-row {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            background: #0f172a;
-            padding: 12px 15px;
-            border-radius: 6px;
-            margin-bottom: 10px;
-            border: 1px solid #334155;
-            flex-wrap: wrap;
-            gap: 10px;
-        }
-        .draw-info span {
-            color: #38bdf8;
-            font-weight: bold;
-        }
-        .draw-date {
-            font-size: 12px;
-            color: #94a3b8;
-        }
-        .draw-balls {
-            display: flex;
-            gap: 6px;
-        }
-        .normal-ball {
-            width: 28px;
-            height: 28px;
-            background: #475569;
-            color: white;
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 12px;
-            font-weight: bold;
-        }
-        .extra-ball {
-            width: 28px;
-            height: 28px;
-            background: #eab308;
-            color: #0f172a;
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 12px;
-            font-weight: bold;
-        }
+      const listaFrecuencias = [];
+      for (let i = 1; i <= maxNumActual; i++) {
+        listaFrecuencias.push({ num: i, hits: conteo[i] });
+      }
+      listaFrecuencias.sort((a, b) => b.hits - a.hits);
 
-        /* Panel de Pruebas Rápido */
-        .test-panel {
-            background: #0f172a;
-            border: 1px dashed #38bdf8;
-            padding: 10px;
-            border-radius: 6px;
-            margin-bottom: 20px;
-            text-align: center;
-            font-size: 13px;
+      const totalNum = maxNumActual;
+      const tercioCount = Math.floor(totalNum / 3);
+      
+      const hotNums = new Set();
+      const coldNums = new Set();
+
+      for (let i = 0; i < totalNum; i++) {
+        if (i < tercioCount) {
+          hotNums.add(listaFrecuencias[i].num);
+        } else if (i >= totalNum - tercioCount) {
+          coldNums.add(listaFrecuencias[i].num);
         }
-        .test-btn {
-            background: #334155;
-            color: white;
-            border: none;
-            padding: 5px 10px;
-            border-radius: 4px;
-            cursor: pointer;
-            margin: 0 4px;
-            font-size: 12px;
-            font-weight: bold;
-        }
-        .test-btn:hover { background: #475569; }
+      }
 
-        /* Footer con Logo TOUR360° */
-        footer {
-            text-align: center;
-            padding: 20px;
-            background: #1e293b;
-            color: #94a3b8;
-            font-weight: bold;
-            font-size: 16px;
-            letter-spacing: 1px;
-            border-top: 1px solid #334155;
-            margin-top: 40px;
-        }
-        footer span {
-            color: #38bdf8;
-        }
+      const maxCols = maxNumActual === 39 ? 4 : 6;
+      let gridHtml = `<div class="ticket-grid" style="grid-template-columns: repeat(${maxCols}, minmax(0, 1fr));">`;
 
-        /* Modal de Login */
-        .modal {
-            display: none;
-            position: fixed;
-            z-index: 1000;
-            left: 0; top: 0; width: 100%; height: 100%;
-            background: rgba(0,0,0,0.6);
-            justify-content: center;
-            align-items: center;
-        }
-        .modal-content {
-            background: #1e293b;
-            padding: 30px;
-            border-radius: 8px;
-            width: 100%;
-            max-width: 350px;
-            text-align: center;
-            position: relative;
-            color: white;
-            border: 1px solid #334155;
-        }
-        .close-btn {
-            position: absolute;
-            top: 10px; right: 15px;
-            font-size: 20px;
-            cursor: pointer;
-            color: #94a3b8;
-        }
-        input {
-            width: 100%;
-            padding: 10px;
-            margin: 10px 0;
-            background: #0f172a;
-            border: 1px solid #475569;
-            color: white;
-            border-radius: 4px;
-            box-sizing: border-box;
-        }
-        .btn-action {
-            background: #3b82f6;
-            color: white;
-            border: none;
-            padding: 10px;
-            width: 100%;
-            border-radius: 4px;
-            font-weight: bold;
-            cursor: pointer;
-            margin-top: 5px;
-        }
-        .btn-action:hover { background: #2563eb; }
-    </style>
-</head>
-<body>
-
-    <!-- Cabecera Original con Esferas 3D -->
-    <header>
-        <div class="logo-container">
-            <h1>¡A Jugar!</h1>
-            <div class="balls-group">
-                <span class="melate-ball">1</span>
-                <span class="melate-ball">2</span>
-                <span class="melate-ball">3</span>
-                <span class="melate-ball">4</span>
-                <span class="melate-ball">5</span>
-                <span class="melate-ball">6</span>
-            </div>
-        </div>
-        <div class="user-panel" id="header-user-panel">
-            <button onclick="openAuthModal()" class="tab-btn" style="background: #3b82f6; color: white; border: none;">Iniciar Sesión (Oro - Premium)</button>
-        </div>
-    </header>
-
-    <div class="app-container">
-        <!-- Barra de Nivel actual -->
-        <div class="status-bar">
-            Nivel actual: <span id="current-plan-badge">FREE</span> 
-            <span onclick="openAuthModal()" style="color: #38bdf8; cursor: pointer; text-decoration: underline; margin-left: 5px;">(Cambiar)</span>
-        </div>
-
-        <!-- Panel de Pruebas (Habilitado para cambiar planes al instante) -->
-        <div class="test-panel">
-            🔧 <strong>Modo Pruebas (Cambio rápido de nivel):</strong> 
-            <button class="test-btn" onclick="setTestTier('free')">Free</button>
-            <button class="test-btn" onclick="setTestTier('oro')">Oro</button>
-            <button class="test-btn" onclick="setTestTier('premium')">Premium</button>
-        </div>
-
-        <!-- Pestañas Principales (Sorteos) -->
-        <div class="nav-tabs">
-            <button class="tab-btn active">Melate</button>
-            <button class="tab-btn">Revancha 🔒</button>
-            <button class="tab-btn">Revanchita 🔒</button>
-            <button class="tab-btn">Retro 🔒</button>
-        </div>
-
-        <!-- Pestañas Secundarias (Herramientas en Cuadrícula Uniforme) -->
-        <div class="sub-tabs">
-            <button class="sub-tab-btn active">📊 Últimos</button>
-            <button class="sub-tab-btn">📈 Frec. 🔒</button>
-            <button class="sub-tab-btn">🎯 Radar 🔒</button>
-            <button class="sub-tab-btn">📐 Rangos 🔒</button>
-            <button class="sub-tab-btn">🤖 Suger. 🔒</button>
-            <button class="sub-tab-btn">🎟️ Boletos</button>
-            <button class="sub-tab-btn" onclick="openAuthModal()">⭐ Planes</button>
-        </div>
-
-        <!-- Contenido: Historial de Sorteos (10 Sorteos completos en Plan Free) -->
-        <div class="card-section">
-            <div class="section-title">
-                Historial de Sorteos (Melate)
-                <span style="font-size: 12px; color: #94a3b8;">Últimos 10 (Plan Free)</span>
-            </div>
-
-            <!-- Sorteo 4244 -->
-            <div class="draw-row"><div class="draw-info">Sorteo <span>#4244</span><div class="draw-date">26/07/2026</div></div><div class="draw-balls"><div class="normal-ball">5</div><div class="normal-ball">11</div><div class="normal-ball">33</div><div class="normal-ball">37</div><div class="normal-ball">45</div><div class="normal-ball">54</div><div class="extra-ball">13</div></div></div>
-            <!-- Sorteo 4243 -->
-            <div class="draw-row"><div class="draw-info">Sorteo <span>#4243</span><div class="draw-date">24/07/2026</div></div><div class="draw-balls"><div class="normal-ball">26</div><div class="normal-ball">33</div><div class="normal-ball">38</div><div class="normal-ball">45</div><div class="normal-ball">47</div><div class="normal-ball">56</div><div class="extra-ball">46</div></div></div>
-            <!-- Sorteo 4242 -->
-            <div class="draw-row"><div class="draw-info">Sorteo <span>#4242</span><div class="draw-date">22/07/2026</div></div><div class="draw-balls"><div class="normal-ball">1</div><div class="normal-ball">3</div><div class="normal-ball">7</div><div class="normal-ball">8</div><div class="normal-ball">37</div><div class="normal-ball">50</div><div class="extra-ball">6</div></div></div>
-            <!-- Sorteo 4241 -->
-            <div class="draw-row"><div class="draw-info">Sorteo <span>#4241</span><div class="draw-date">19/07/2026</div></div><div class="draw-balls"><div class="normal-ball">9</div><div class="normal-ball">16</div><div class="normal-ball">35</div><div class="normal-ball">45</div><div class="normal-ball">50</div><div class="normal-ball">51</div><div class="extra-ball">34</div></div></div>
-            <!-- Sorteo 4240 -->
-            <div class="draw-row"><div class="draw-info">Sorteo <span>#4240</span><div class="draw-date">17/07/2026</div></div><div class="draw-balls"><div class="normal-ball">2</div><div class="normal-ball">23</div><div class="normal-ball">39</div><div class="normal-ball">41</div><div class="normal-ball">49</div><div class="normal-ball">55</div><div class="extra-ball">14</div></div></div>
-            <!-- Sorteo 4239 -->
-            <div class="draw-row"><div class="draw-info">Sorteo <span>#4239</span><div class="draw-date">15/07/2026</div></div><div class="draw-balls"><div class="normal-ball">14</div><div class="normal-ball">23</div><div class="normal-ball">31</div><div class="normal-ball">50</div><div class="normal-ball">51</div><div class="normal-ball">52</div><div class="extra-ball">33</div></div></div>
-            <!-- Sorteo 4238 -->
-            <div class="draw-row"><div class="draw-info">Sorteo <span>#4238</span><div class="draw-date">12/07/2026</div></div><div class="draw-balls"><div class="normal-ball">4</div><div class="normal-ball">12</div><div class="normal-ball">19</div><div class="normal-ball">28</div><div class="normal-ball">44</div><div class="normal-ball">53</div><div class="extra-ball">21</div></div></div>
-            <!-- Sorteo 4237 -->
-            <div class="draw-row"><div class="draw-info">Sorteo <span>#4237</span><div class="draw-date">10/07/2026</div></div><div class="draw-balls"><div class="normal-ball">8</div><div class="normal-ball">15</div><div class="normal-ball">22</div><div class="normal-ball">30</div><div class="normal-ball">41</div><div class="normal-ball">48</div><div class="extra-ball">9</div></div></div>
-            <!-- Sorteo 4236 -->
-            <div class="draw-row"><div class="draw-info">Sorteo <span>#4236</span><div class="draw-date">08/07/2026</div></div><div class="draw-balls"><div class="normal-ball">6</div><div class="normal-ball">13</div><div class="normal-ball">24</div><div class="normal-ball">32</div><div class="normal-ball">42</div><div class="normal-ball">56</div><div class="extra-ball">18</div></div></div>
-            <!-- Sorteo 4235 -->
-            <div class="draw-row"><div class="draw-info">Sorteo <span>#4235</span><div class="draw-date">05/07/2026</div></div><div class="draw-balls"><div class="normal-ball">3</div><div class="normal-ball">10</div><div class="normal-ball">17</div><div class="normal-ball">29</div><div class="normal-ball">38</div><div class="normal-ball">49</div><div class="extra-ball">25</div></div></div>
-
-        </div>
-    </div>
-
-    <!-- Footer con Logo TOUR360° -->
-    <footer>
-        TOUR<span>360°</span> - Plataforma de Análisis Estadístico
-    </footer>
-
-    <!-- Modal de Autenticación -->
-    <div id="auth-modal" class="modal">
-        <div class="modal-content">
-            <span class="close-btn" onclick="closeAuthModal()">&times;</span>
-            <h2>Acceso a Cuenta y Planes</h2>
-            <p style="font-size: 13px; color: #94a3b8;">Inicia sesión para activar tu membresía Oro o Premium.</p>
-            <input type="email" id="email" placeholder="Correo electrónico">
-            <input type="password" id="password" placeholder="Contraseña">
-            <button onclick="signIn()" class="btn-action">Iniciar Sesión</button>
-            <button onclick="signUp()" class="btn-action" style="background: #475569;">Registrarse</button>
-            <div id="status-msg" style="margin-top: 10px; font-size: 13px;"></div>
-        </div>
-    </div>
-
-    <!-- Lógica de Supabase y Sesión -->
-    <script>
-        const SUPABASE_URL = 'https://jcvfndovnwfqacxuhegd.supabase.co';
-        const SUPABASE_ANON_KEY = 'sb_publishable_C7L3U-1Wt78PtPog06WRgA_smUPA4AR';
-        
-        const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-
-        function openAuthModal() {
-            document.getElementById('auth-modal').style.display = 'flex';
-        }
-
-        function closeAuthModal() {
-            document.getElementById('auth-modal').style.display = 'none';
-            document.getElementById('status-msg').innerText = '';
-        }
-
-        function showMessage(msg, isError = false) {
-            const statusDiv = document.getElementById('status-msg');
-            statusDiv.style.color = isError ? '#f87171' : '#38bdf8';
-            statusDiv.innerText = msg;
-        }
-
-        // Función de prueba para cambiar de nivel al instante
-        function setTestTier(tierName) {
-            document.getElementById('current-plan-badge').innerText = tierName.toUpperCase();
-        }
-
-        async function checkUser() {
-            try {
-                const { data: { session }, error } = await supabase.auth.getSession();
-                if (error) throw error;
-                
-                const panel = document.getElementById('header-user-panel');
-                
-                if (session) {
-                    panel.innerHTML = `
-                        <span style="font-size: 13px; color: #cbd5e1;">${session.user.email}</span>
-                        <button onclick="signOut()" class="tab-btn" style="background: #475569; color: white; border: none; padding: 6px 10px;">Cerrar Sesión</button>
-                    `;
-                    loadUserTier(session.user.id);
-                } else {
-                    panel.innerHTML = `<button onclick="openAuthModal()" class="tab-btn" style="background: #3b82f6; color: white; border: none;">Iniciar Sesión (Oro - Premium)</button>`;
-                }
-            } catch (err) {
-                console.error('Error de sesión:', err.message);
+      for (let r = 1; r <= 10; r++) {
+        for (let c = 1; c <= maxCols; c++) {
+          if (maxNumActual === 39) {
+            if (r === 1 && c === 1) {
+              gridHtml += `<div class="ticket-cell empty" style="background: #1e293b; border: 1px solid #334155; display: flex; align-items: center; justify-content: center; font-size: 0.75rem; color: #94a3b8; font-weight: bold;">A.</div>`;
+              continue;
             }
-        }
+            let num = null;
+            if (c === 1) num = r - 1; 
+            else if (c === 2) num = 9 + r; 
+            else if (c === 3) num = 19 + r; 
+            else if (c === 4) num = 29 + r; 
 
-        async function signIn() {
-            const email = document.getElementById('email').value;
-            const password = document.getElementById('password').value;
-            
-            if (!email || !password) {
-                showMessage('Ingresa correo y contraseña', true);
-                return;
-            }
+            const hitsVal = conteo[num];
+            let claseEstado = 'warm';
+            if (hotNums.has(num)) claseEstado = 'hot';
+            else if (coldNums.has(num)) claseEstado = 'cold';
 
-            showMessage('Iniciando sesión...');
-            const { data, error } = await supabase.auth.signInWithPassword({ email, password });
-            
-            if (error) {
-                showMessage('Error: ' + error.message, true);
+            const esSugerido = sugerenciaActual.includes(num);
+            if (esSugerido) claseEstado += ' suggested';
+
+            gridHtml += `
+              <div class="ticket-cell ${claseEstado}" onclick="toggleNumeroRadar(${num})">
+                <span>${num}</span>
+                <span class="count-badge">${hitsVal > 0 ? hitsVal + 'v' : '0v'}</span>
+              </div>
+            `;
+          } else {
+            const num = (c - 1) * 10 + r;
+            if (num > maxNumActual) {
+              gridHtml += `<div class="ticket-cell empty"></div>`;
             } else {
-                closeAuthModal();
-                checkUser();
+              const hitsVal = conteo[num];
+              let claseEstado = 'warm';
+              if (hotNums.has(num)) claseEstado = 'hot';
+              else if (coldNums.has(num)) claseEstado = 'cold';
+
+              const esSugerido = sugerenciaActual.includes(num);
+              if (esSugerido) claseEstado += ' suggested';
+
+              gridHtml += `
+                <div class="ticket-cell ${claseEstado}" onclick="toggleNumeroRadar(${num})">
+                  <span>${num}</span>
+                  <span class="count-badge">${hitsVal > 0 ? hitsVal + 'v' : '0v'}</span>
+                </div>
+              `;
             }
+          }
+        }
+      }
+      gridHtml += `</div>`;
+
+      let controlesSugerenciaHtml = `
+        <div style="margin-top: 8px; background: #0f172a; padding: 6px; border-radius: 6px; border: 1px solid #1e293b; display: flex; flex-direction: column; gap: 4px;">
+          <button class="btn-action" style="background: #4f46e5; font-size: 0.7rem; padding: 6px; margin: 0;" onclick="generarSugerenciaEnRadar()">🔮 Generar Nueva Sugerencia</button>
+      `;
+
+      if (sugerenciaActual.length > 0) {
+        const valHist = verificarUnicidad(sugerenciaActual);
+        controlesSugerenciaHtml += `
+          <div style="font-size: 0.65rem; color: #10b981; font-weight: bold; text-align: center; margin-top: 2px;">
+            ✨ Selección (${sugerenciaActual.length}/6): [ ${sugerenciaActual.join(', ')} ]
+          </div>
+          <div style="font-size: 0.62rem; text-align: center; color: ${valHist.repetido ? '#ef4444' : '#22c55e'};">
+            ${valHist.repetido ? `⚠️ Salió antes en sorteo #${valHist.sorteoEncontrado}` : `✅ ¡Nunca ha salido!`}
+          </div>
+          ${sugerenciaActual.length === 6 ? `<button class="btn-action" style="background: #10b981; font-size: 0.68rem; padding: 6px; margin: 0;" onclick="guardarSugerenciaDirecta('${sugerenciaActual.join(',')}')">💾 Guardar Boleto Actual</button>` : `<div style="font-size: 0.6rem; color: #eab308; text-align: center;">Selecciona ${6 - sugerenciaActual.length} número(s) más para guardar</div>`}
+          <button class="btn-action" style="background: #64748b; font-size: 0.68rem; padding: 6px; margin: 0;" onclick="limpiarSugerenciaRadar()">🧹 Limpiar Selección</button>
+        `;
+      }
+
+      controlesSugerenciaHtml += `
+          <div id="msg-guardar-radar" style="font-size: 0.6rem; text-align: center;"></div>
+        </div>
+      `;
+
+      container.innerHTML = `
+        <div style="width: 100%;">
+          ${gridHtml}
+          ${controlesSugerenciaHtml}
+        </div>
+      `;
+    }
+
+    function toggleNumeroRadar(num) {
+      const index = sugerenciaActual.indexOf(num);
+      if (index > -1) {
+        sugerenciaActual.splice(index, 1);
+      } else {
+        if (sugerenciaActual.length >= 6) {
+          alert('Ya has seleccionado 6 números.');
+          return;
+        }
+        sugerenciaActual.push(num);
+        sugerenciaActual.sort((a, b) => a - b);
+      }
+      actualizarRadarSegunRango();
+    }
+
+    function limpiarSugerenciaRadar() {
+      sugerenciaActual = [];
+      actualizarRadarSegunRango();
+    }
+
+    function generarSugerenciaEnRadar() {
+      const bolsa = new Set();
+      while (bolsa.size < 6) {
+        bolsa.add(Math.floor(Math.random() * maxNumActual) + 1);
+      }
+      sugerenciaActual = Array.from(bolsa).sort((a, b) => a - b);
+      actualizarRadarSegunRango();
+    }
+
+    function actualizarFrecuenciasSegunRango() {
+      const select = document.getElementById('select-freq-rango');
+      const val = select ? select.value : 'todos';
+      let datosMuestra = datosHistoricos;
+
+      if (val !== 'todos') {
+        const limite = parseInt(val);
+        datosMuestra = datosHistoricos.slice(0, limite);
+      }
+      calcularFrecuencias(datosMuestra);
+    }
+
+    function calcularFrecuencias(muestraSorteos) {
+      const conteo = {};
+      for (let i = 1; i <= maxNumActual; i++) conteo[i] = 0;
+      muestraSorteos.forEach(sorteo => {
+        const nums = extraerNumeros(sorteo);
+        nums.forEach(n => { if (conteo[n] !== undefined) conteo[n]++; });
+      });
+
+      const ordenados = Object.keys(conteo).map(Number).sort((a, b) => conteo[b] - conteo[a]);
+      calientesGlobales = ordenados.slice(0, 6);
+      friosGlobales = ordenados.slice(-6);
+      const maxVeces = conteo[ordenados[0]] || 1;
+
+      const htmlFrecuencias = ordenados.map((num) => {
+        const veces = conteo[num];
+        const porcentajeBarra = Math.round((veces / maxVeces) * 100);
+
+        let claseBall = 'ball freq-ball';
+        if (calientesGlobales.includes(num)) {
+          claseBall += ' hot';
+        } else if (friosGlobales.includes(num)) {
+          claseBall += ' cold';
         }
 
-        async function signUp() {
-            const email = document.getElementById('email').value;
-            const password = document.getElementById('password').value;
-            
-            if (!email || !password) {
-                showMessage('Ingresa correo y contraseña', true);
-                return;
-            }
+        return `
+          <div class="freq-row">
+            <div class="${claseBall}" style="background: radial-gradient(circle at 30% 30%, var(--ball-light, #38bdf8), var(--ball-dark, #0369a1)); box-shadow: inset -3px -3px 6px rgba(0,0,0,0.6), 0 3px 6px rgba(0,0,0,0.4);">${num}</div>
+            <div class="freq-bar-container"><div class="freq-bar" style="width: ${porcentajeBarra}%;"></div></div>
+            <div class="freq-count">${veces}v</div>
+          </div>
+        `;
+      }).join('');
 
-            showMessage('Registrando...');
-            const { data, error } = await supabase.auth.signUp({ email, password });
-            
-            if (error) {
-                showMessage('Error: ' + error.message, true);
-            } else {
-                showMessage('¡Registro exitoso! Ya puedes iniciar sesión.');
-            }
+      const listaEl = document.getElementById('frecuencias-lista');
+      if (listaEl) listaEl.innerHTML = htmlFrecuencias;
+    }
+
+    function calcularRangos(ultimos20) {
+      if (!ultimos20 || ultimos20.length === 0) return;
+      let sumaTotalAccum = 0;
+      let minSuma = Infinity;
+      let maxSuma = -Infinity;
+
+      ultimos20.forEach(sorteo => {
+        const nums = extraerNumeros(sorteo);
+        const suma = nums.reduce((a, b) => a + b, 0);
+        sumaTotalAccum += suma;
+        if (suma < minSuma) minSuma = suma;
+        if (suma > maxSuma) maxSuma = suma;
+      });
+
+      const promSuma = Math.round(sumaTotalAccum / ultimos20.length);
+
+      const metricsEl = document.getElementById('rangos-metrics');
+      if (metricsEl) {
+        metricsEl.innerHTML = `
+          <div class="metric-row">
+            <span class="metric-label">Suma Mínima:</span>
+            <span class="metric-value" style="color: #38bdf8;">${minSuma} pts</span>
+          </div>
+          <div class="metric-row">
+            <span class="metric-label">Suma Máxima:</span>
+            <span class="metric-value" style="color: #ef4444;">${maxSuma} pts</span>
+          </div>
+          <div class="metric-row">
+            <span class="metric-label">Promedio Suma Total:</span>
+            <span class="metric-value status-ok">${promSuma} pts</span>
+          </div>
+        `;
+      }
+    }
+
+    function verificarUnicidad(numsArr) {
+      const sortedTarget = [...numsArr].map(Number).sort((a, b) => a - b);
+      for (let sorteo of datosHistoricos) {
+        const sNums = [...extraerNumeros(sorteo)].map(Number).sort((a, b) => a - b);
+        if (sNums.length === sortedTarget.length && sNums.every((val, idx) => val === sortedTarget[idx])) {
+          return { repetido: true, sorteoEncontrado: sorteo.sorteo || sorteo.numero_sorteo || sorteo.id };
+        }
+      }
+      return { repetido: false };
+    }
+
+    function analizarCoincidenciasParcialesConHistorial(numsBoleto, historial) {
+      const setBoleto = new Set(numsBoleto.map(Number));
+      let aciertos6 = 0;
+      let aciertos5 = 0;
+      let aciertos4 = 0;
+      let sorteos6 = [];
+      let detalles5 = [];
+      let detalles4 = [];
+
+      historial.forEach(sorteo => {
+        const sNums = extraerNumeros(sorteo).map(Number);
+        const numerosAcertados = sNums.filter(n => setBoleto.has(n));
+        const matches = numerosAcertados.length;
+
+        const numSorteo = sorteo.sorteo || sorteo.numero_sorteo || sorteo.id;
+        if (matches === 6) {
+          aciertos6++;
+          sorteos6.push(numSorteo);
+        } else if (matches === 5) {
+          aciertos5++;
+          detalles5.push({ sorteo: numSorteo, numeros: numerosAcertados.sort((a,b) => a - b) });
+        } else if (matches === 4) {
+          aciertos4++;
+          detalles4.push({ sorteo: numSorteo, numeros: numerosAcertados.sort((a,b) => a - b) });
+        }
+      });
+
+      return { aciertos6, aciertos5, aciertos4, sorteos6, detalles5, detalles4 };
+    }
+
+    function generarSugerencia() {
+      if (usuarioPlan === 'free' && juegoActual !== 'historico_melate') {
+        alert('🔒 Las sugerencias para este sorteo requieren el Plan Oro.');
+        return;
+      }
+      const bolsa = new Set();
+      while (bolsa.size < 6) {
+        bolsa.add(Math.floor(Math.random() * maxNumActual) + 1);
+      }
+      const propuesta = Array.from(bolsa).sort((a, b) => a - b);
+      sugerenciaActual = propuesta; 
+
+      const suma = propuesta.reduce((a, b) => a + b, 0);
+      const minSuma = maxNumActual === 39 ? 80 : 120;
+      const maxSuma = maxNumActual === 39 ? 160 : 220;
+      const sumaOk = suma >= minSuma && suma <= maxSuma;
+      const valHist = verificarUnicidad(propuesta);
+
+      let calientesCount = 0;
+      let friosCount = 0;
+      let tibiosCount = 0;
+      let paresCount = 0;
+      let imparesCount = 0;
+
+      propuesta.forEach(n => {
+        if (calientesGlobales.includes(n)) calientesCount++;
+        else if (friosGlobales.includes(n)) friosCount++;
+        else tibiosCount++;
+
+        if (n % 2 === 0) paresCount++;
+        else imparesCount++;
+      });
+
+      const esferasHtml = propuesta.map(n => {
+        let clase = '';
+        let estilo3D = 'background: radial-gradient(circle at 30% 30%, #38bdf8, #0369a1); box-shadow: inset -3px -3px 6px rgba(0,0,0,0.6), 0 3px 6px rgba(0,0,0,0.4);';
+        if (calientesGlobales.includes(n)) {
+          clase = ' hot';
+          estilo3D = 'background: radial-gradient(circle at 30% 30%, #f87171, #b91c1c); box-shadow: inset -3px -3px 6px rgba(0,0,0,0.6), 0 3px 6px rgba(0,0,0,0.4);';
+        } else if (friosGlobales.includes(n)) {
+          clase = ' cold';
+          estilo3D = 'background: radial-gradient(circle at 30% 30%, #60a5fa, #1d4ed8); box-shadow: inset -3px -3px 6px rgba(0,0,0,0.6), 0 3px 6px rgba(0,0,0,0.4);';
+        }
+        return `<div class="ball${clase}" style="${estilo3D}">${n}</div>`;
+      }).join('');
+
+      let partesTemp = [];
+      if (calientesCount > 0) partesTemp.push(`${calientesCount} ${calientesCount === 1 ? 'número caliente' : 'números calientes'}`);
+      if (tibiosCount > 0) partesTemp.push(`${tibiosCount} ${tibiosCount === 1 ? 'número tibio' : 'números tibios'}`);
+      if (friosCount > 0) partesTemp.push(`${friosCount} ${friosCount === 1 ? 'número frío' : 'números fríos'}`);
+
+      let textoDescriptivo = `Esta combinación para <strong>${NOMBRES_JUEGOS[juegoActual]}</strong> incluye ${partesTemp.join(', ')}, ${paresCount} pares y ${imparesCount} impares, con una suma total de <strong>${suma} pts</strong> (${sumaOk ? 'en rango aceptable' : 'fuera de rango'}).`;
+
+      document.getElementById('sugerencia-result').innerHTML = `
+        <div class="balls-container" style="margin-bottom: 6px;">${esferasHtml}</div>
+        <div style="background: #0f172a; padding: 6px; border-radius: 5px; border: 1px solid #1e293b; margin-bottom: 6px; font-size: 0.68rem; line-height: 1.3; color: #cbd5e1; text-align: left;">
+          💡 ${textoDescriptivo}
+        </div>
+        <div style="background: #0f172a; padding: 5px; border-radius: 5px; border: 1px solid #1e293b; margin-bottom: 5px; font-size: 0.7rem;">
+          <div class="metric-row" style="border:none; padding:0;">
+            <span class="metric-label">Suma Total:</span>
+            <span class="metric-value ${sumaOk ? 'status-ok' : 'status-out'}">${suma} pts (${sumaOk ? 'En Rango' : 'Fuera'})</span>
+          </div>
+          <div class="metric-row" style="border:none; padding:2px 0 0 0;">
+            <span class="metric-label">Validación Histórica:</span>
+            <span class="metric-value" style="color: ${valHist.repetido ? '#ef4444' : '#22c55e'};">
+              ${valHist.repetido ? `Salió en sorteo #${valHist.sorteoEncontrado}` : `✅ ¡Nunca ha salido!`}
+            </span>
+          </div>
+        </div>
+        <button class="btn-action" style="background: #0284c7; margin-bottom: 4px;" onclick="verSugerenciaEnRadar([${propuesta.join(',')}])">🎯 Ver en Radar</button>
+        <button class="btn-action" style="background: #10b981;" onclick="guardarSugerenciaDirecta('${propuesta.join(',')}')">💾 Guardar Boleto</button>
+        <div id="msg-guardar-sugerencia" style="margin-top: 4px; font-size: 0.65rem; text-align: center;"></div>
+      `;
+    }
+
+    async function guardarSugerenciaDirecta(numsStr) {
+      const numerosArr = numsStr.split(',').map(Number);
+      const alias = prompt('Nombre o alias para este boleto:', `Boleto ${NOMBRES_JUEGOS[juegoActual]}`);
+      if (alias === null) return;
+
+      const { error } = await db.from('mis_jugadas').insert([
+        { juego: juegoActual, numeros: numerosArr, alias: alias || 'Mi Boleto' }
+      ]);
+
+      const msgEl = document.getElementById('msg-guardar-sugerencia') || document.getElementById('msg-guardar-radar');
+      if (msgEl) {
+        msgEl.innerHTML = error ? `<span style="color:#ef4444;">Error: ${error.message}</span>` : `<span style="color:#22c55e;">¡Guardado con éxito! 🎟️</span>`;
+      }
+      if (document.getElementById('tab-jugadas').classList.contains('active')) {
+        cargarMisJugadas();
+      }
+    }
+
+    async function guardarJugada() {
+      const alias = document.getElementById('jugada-alias').value;
+      const rawNums = document.getElementById('jugada-numeros').value;
+      const numerosArr = rawNums.split(',').map(n => parseInt(n.trim())).filter(n => !isNaN(n));
+
+      if (numerosArr.length !== 6) {
+        alert('Ingresa exactamente 6 números separados por comas.');
+        return;
+      }
+
+      const { error } = await db.from('mis_jugadas').insert([
+        { juego: juegoActual, numeros: numerosArr, alias: alias || 'Mi Boleto' }
+      ]);
+
+      if (error) alert('Error: ' + error.message);
+      else {
+        document.getElementById('jugada-alias').value = '';
+        document.getElementById('jugada-numeros').value = '';
+        cargarMisJugadas();
+      }
+    }
+
+    async function eliminarJugada(id) {
+      if (!confirm('¿Deseas eliminar este boleto?')) return;
+      const { error } = await db.from('mis_jugadas').delete().eq('id', id);
+      if (error) {
+        alert('Error al eliminar de Supabase: ' + error.message);
+      } else {
+        cargarMisJugadas();
+      }
+    }
+
+    async function cargarMisJugadas() {
+      const container = document.getElementById('mis-jugadas-lista');
+      container.innerHTML = '<div class="loader">Cargando...</div>';
+
+      const { data, error } = await db
+        .from('mis_jugadas')
+        .select('*')
+        .order('fecha_registro', { ascending: false });
+
+      if (error || !data || data.length === 0) {
+        container.innerHTML = `<div style="color:#8c9ba5; font-size:0.68rem; padding:6px 0; text-align:center;">No hay jugadas guardadas.</div>`;
+        return;
+      }
+
+      let htmlAcumulado = '';
+      for (let j of data) {
+        const historialJuego = await obtenerHistorialJuego(j.juego);
+        const analisis = analizarCoincidenciasParcialesConHistorial(j.numeros, historialJuego);
+        const nombreJuegoTag = NOMBRES_JUEGOS[j.juego] || 'Melate';
+        
+        let estadoExactoHtml = analisis.aciertos6 > 0 
+          ? `<span style="color:#ef4444;">Salió en #${analisis.sorteos6.join(', #')}</span>` 
+          : `<span style="color:#22c55e;">✅ Nunca ha salido (6/6)</span>`;
+
+        let detallesAciertosHtml = '';
+        if (analisis.aciertos5 > 0 || analisis.aciertos4 > 0) {
+          detallesAciertosHtml += `<div style="margin-top: 4px; display: flex; flex-direction: column; gap: 2px;">`;
+          
+          analisis.detalles5.forEach(d => {
+            detallesAciertosHtml += `
+              <div style="font-size: 0.55rem; color: #38bdf8; background: #0b111e; padding: 2px 4px; border-radius: 3px; border: 1px solid #1e293b;">
+                ✦ <b>5 aciertos</b> (Sorteo #${d.sorteo}): <span style="color:#fff;">[ ${d.numeros.join(', ')} ]</span>
+              </div>
+            `;
+          });
+
+          analisis.detalles4.forEach(d => {
+            detallesAciertosHtml += `
+              <div style="font-size: 0.55rem; color: #eab308; background: #0b111e; padding: 2px 4px; border-radius: 3px; border: 1px solid #1e293b;">
+                ✦ <b>4 aciertos</b> (Sorteo #${d.sorteo}): <span style="color:#fff;">[ ${d.numeros.join(', ')} ]</span>
+              </div>
+            `;
+          });
+
+          detallesAciertosHtml += `</div>`;
         }
 
-        async function signOut() {
-            await supabase.auth.signOut();
-            document.getElementById('current-plan-badge').innerText = 'FREE';
-            checkUser();
-        }
+        htmlAcumulado += `
+          <div style="background:#0f172a; padding:6px; border-radius:5px; margin-bottom:5px; border: 1px solid #1e293b; position:relative;">
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:2px;">
+              <div style="display:flex; align-items:center; gap:4px; overflow:hidden;">
+                <strong style="font-size:0.68rem; color:#38bdf8; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">${j.alias}</strong>
+                <span style="font-size:0.52rem; background:#1e293b; color:#eab308; padding:1px 4px; border-radius:3px; border:1px solid #334155; white-space:nowrap;">${nombreJuegoTag}</span>
+              </div>
+              <div style="display:flex; align-items:center; gap:6px;">
+                <div style="font-size:0.58rem; white-space:nowrap;">
+                  ${estadoExactoHtml}
+                </div>
+                <button onclick="eliminarJugada('${j.id}')" style="background:transparent; border:none; cursor:pointer; font-size:0.85rem; padding:0 2px;" title="Eliminar boleto">🗑️</button>
+              </div>
+            </div>
+            <div class="balls-container" style="justify-content:flex-start; gap:4px; margin-bottom: 4px;">
+              ${j.numeros.map(n => `<div class="ball" style="width:22px; height:22px; font-size:0.55rem; background: radial-gradient(circle at 30% 30%, #38bdf8, #0369a1); box-shadow: inset -2px -2px 4px rgba(0,0,0,0.6), 0 2px 4px rgba(0,0,0,0.4);">${n}</div>`).join('')}
+            </div>
+            <div style="display:flex; justify-content:space-between; align-items:center; font-size:0.58rem; background:#161f30; padding:3px 5px; border-radius:4px; border:1px solid #1e293b; color:#94a3b8; margin-bottom: 4px;">
+              <span>🎯 Parciales históricos:</span>
+              <span style="color:#38bdf8;"><strong>5 aciertos:</strong> ${analisis.aciertos5}v</span>
+              <span style="color:#eab308;"><strong>4 aciertos:</strong> ${analisis.aciertos4}v</span>
+            </div>
+            ${detallesAciertosHtml}
+            <button class="btn-action" style="background: #0284c7; font-size: 0.65rem; padding: 5px; margin-top: 4px;" onclick="verBoletoEnRadar('${j.juego}', [${j.numeros.join(',')}])">🎯 Ver en Radar</button>
+          </div>
+        `;
+      }
+      container.innerHTML = htmlAcumulado;
+    }
 
-        async function loadUserTier(userId) {
-            try {
-                const { data, error } = await supabase
-                    .from('profiles')
-                    .select('tier')
-                    .eq('id', userId)
-                    .single();
-                    
-                if (data && data.tier) {
-                    document.getElementById('current-plan-badge').innerText = data.tier.toUpperCase();
-                } else {
-                    document.getElementById('current-plan-badge').innerText = 'FREE';
-                }
-            } catch (err) {
-                document.getElementById('current-plan-badge').innerText = 'FREE';
-            }
-        }
+    function extraerNumeros(sorteo) {
+      if (!sorteo) return [];
+      if (sorteo.r1 !== undefined) return [sorteo.r1, sorteo.r2, sorteo.r3, sorteo.r4, sorteo.r5, sorteo.r6].map(Number);
+      if (sorteo.n1 !== undefined) return [sorteo.n1, sorteo.n2, sorteo.n3, sorteo.n4, sorteo.n5, sorteo.n6].map(Number);
+      if (sorteo.rev1 !== undefined) return [sorteo.rev1, sorteo.rev2, sorteo.rev3, sorteo.rev4, sorteo.rev5, sorteo.rev6].map(Number);
+      if (Array.isArray(sorteo.numeros)) return sorteo.numeros.map(Number);
+      return [];
+    }
 
-        window.onload = checkUser;
-    </script>
+    document.addEventListener('DOMContentLoaded', async () => {
+      verificarEstadoPrueba();
+      aplicarRestriccionesPlan();
+      await cargarDatosCompletos();
+      setTimeout(mostrarPistaZoomMovil, 1200);
+    });
+  </script>
 </body>
 </html>
