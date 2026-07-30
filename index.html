@@ -115,16 +115,9 @@
             font-size: 13px;
             font-weight: bold;
         }
-        #free-notification {
-            margin-top: 15px;
-            padding: 10px;
-            background-color: #ecfdf5;
-            color: #065f46;
-            border: 1px solid #a7f3d0;
-            border-radius: 4px;
+        /* Control de vistas */
+        #app-view {
             display: none;
-            font-size: 14px;
-            font-weight: bold;
         }
     </style>
 </head>
@@ -134,27 +127,39 @@
     <header>
         <h1>¡A Jugar! 🎰</h1>
         <div class="user-panel" id="header-user-panel">
-            <!-- Se llena dinámicamente con JS -->
+            <button onclick="openAuthModal()" style="padding: 6px 15px; font-size: 13px; width: auto;">Iniciar Sesión</button>
         </div>
     </header>
 
-    <!-- Contenido Principal Visible para Todos (Freemium) -->
-    <div class="main-container">
+    <!-- VISTA 1: Landing / Bienvenida Comercial -->
+    <div class="main-container" id="landing-view">
         <div class="card">
             <h2>Domina las estadísticas y maximiza tus jugadas</h2>
             <p>Descubre el poder del análisis de datos, matrices de frecuencia y algoritmos inteligentes para evaluar cada sorteo con precisión.</p>
             <hr style="border: 0; border-top: 1px solid #eee; margin: 20px 0;">
             <div style="background: #f8fafc; padding: 20px; border-radius: 6px; border-left: 4px solid #2563eb;">
-                <h3>📊 Vista Previa de Sorteos (Modo Libre)</h3>
-                <p>Las funciones avanzadas de predicción y algoritmos personalizados están reservadas para cuentas con membresía Oro o Premium.</p>
+                <h3>📊 Acceso a la Plataforma</h3>
+                <p>Explora las herramientas base de forma gratuita o suscríbete a un nivel superior para desbloquear funciones de predicción avanzada.</p>
                 
-                <!-- Botones de Elección -->
-                <button onclick="enterFreePlan()" class="secondary-btn" style="margin-bottom: 10px; background-color: #059669;">Continuar con Plan Free (Acceso Libre)</button>
+                <button onclick="enterApp('FREE')" class="secondary-btn" style="margin-bottom: 10px; background-color: #059669;">Continuar con Plan Free (Acceso Libre)</button>
                 <button onclick="openAuthModal()">Iniciar Sesión / Registrarse para Plan Oro o Premium</button>
-                
-                <div id="free-notification">
-                    ✓ Estás explorando el Plan Free. ¡Disfruta de las estadísticas base!
-                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- VISTA 2: Aplicación Principal / Panel de Herramientas -->
+    <div class="main-container" id="app-view">
+        <div class="card">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
+                <h2 id="app-title" style="margin: 0;">Panel de Control</h2>
+                <span class="badge" id="current-plan-badge">PLAN: FREE</span>
+            </div>
+            <p>Bienvenido a tu entorno de trabajo estadístico. Aquí tienes acceso a los módulos habilitados para tu cuenta.</p>
+            <hr style="border: 0; border-top: 1px solid #eee; margin: 20px 0;">
+            <div style="background: #f0fdf4; padding: 20px; border-radius: 6px; border: 1px solid #bbf7d0;">
+                <h3 style="color: #166534; margin-top: 0;">🎲 Módulos de Sorteos Activos</h3>
+                <p style="color: #15803d;">Selecciona una herramienta para comenzar a procesar tus combinaciones y frecuencias.</p>
+                <button onclick="goBackToLanding()" class="secondary-btn" style="width: auto; margin-top: 10px; background-color: #64748b;">Regresar a Inicio</button>
             </div>
         </div>
     </div>
@@ -194,10 +199,17 @@
             document.getElementById('status-msg').innerText = '';
         }
 
-        function enterFreePlan() {
-            const notice = document.getElementById('free-notification');
-            notice.style.display = 'block';
-            window.scrollTo({ top: document.body.scrollHeight, behavior: 'smooth' });
+        function enterApp(tierName) {
+            document.getElementById('landing-view').style.display = 'none';
+            document.getElementById('app-view').style.display = 'block';
+            document.getElementById('current-plan-badge').innerText = 'PLAN: ' + tierName;
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+
+        function goBackToLanding() {
+            document.getElementById('app-view').style.display = 'none';
+            document.getElementById('landing-view').style.display = 'block';
+            window.scrollTo({ top: 0, behavior: 'smooth' });
         }
 
         // Verificar sesión al cargar la página
@@ -211,7 +223,6 @@
                 if (session) {
                     panel.innerHTML = `
                         <span style="font-size: 14px;">${session.user.email}</span>
-                        <span class="badge" id="user-tier">PLAN: CARGANDO...</span>
                         <button onclick="signOut()" class="secondary-btn" style="padding: 5px 10px; font-size: 12px; width: auto;">Cerrar Sesión</button>
                     `;
                     loadUserTier(session.user.id);
@@ -261,11 +272,13 @@
             } else {
                 closeAuthModal();
                 checkUser();
+                enterApp('ORO / PREMIUM'); // O el nivel que detecte Supabase
             }
         }
 
         async function signOut() {
             await supabase.auth.signOut();
+            goBackToLanding();
             checkUser();
         }
 
@@ -278,12 +291,12 @@
                     .single();
                     
                 if (data && data.tier) {
-                    document.getElementById('user-tier').innerText = 'PLAN: ' + data.tier.toUpperCase();
+                    document.getElementById('current-plan-badge').innerText = 'PLAN: ' + data.tier.toUpperCase();
                 } else {
-                    document.getElementById('user-tier').innerText = 'PLAN: FREE';
+                    document.getElementById('current-plan-badge').innerText = 'PLAN: FREE';
                 }
             } catch (err) {
-                document.getElementById('user-tier').innerText = 'PLAN: FREE';
+                document.getElementById('current-plan-badge').innerText = 'PLAN: FREE';
             }
         }
 
