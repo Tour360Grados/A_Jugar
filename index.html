@@ -61,6 +61,7 @@
             color: white;
             font-weight: bold;
             cursor: pointer;
+            width: 100%;
         }
         button:hover {
             background-color: #1d4ed8;
@@ -114,6 +115,17 @@
             font-size: 13px;
             font-weight: bold;
         }
+        #free-notification {
+            margin-top: 15px;
+            padding: 10px;
+            background-color: #ecfdf5;
+            color: #065f46;
+            border: 1px solid #a7f3d0;
+            border-radius: 4px;
+            display: none;
+            font-size: 14px;
+            font-weight: bold;
+        }
     </style>
 </head>
 <body>
@@ -135,7 +147,14 @@
             <div style="background: #f8fafc; padding: 20px; border-radius: 6px; border-left: 4px solid #2563eb;">
                 <h3>📊 Vista Previa de Sorteos (Modo Libre)</h3>
                 <p>Las funciones avanzadas de predicción y algoritmos personalizados están reservadas para cuentas con membresía Oro o Premium.</p>
-                <button onclick="openAuthModal()">Iniciar Sesión / Registrarse para Acceder</button>
+                
+                <!-- Nuevos Botones de Elección -->
+                <button onclick="enterFreePlan()" class="secondary-btn" style="margin-bottom: 10px; background-color: #059669;">Continuar con Plan Free (Acceso Libre)</button>
+                <button onclick="openAuthModal()">Iniciar Sesión / Registrarse para Plan Oro o Premium</button>
+                
+                <div id="free-notification">
+                    ✓ Estás explorando el Plan Free. ¡Disfruta de las estadísticas base!
+                </div>
             </div>
         </div>
     </div>
@@ -147,8 +166,8 @@
             <h2>Acceso a la Cuenta</h2>
             <input type="email" id="email" placeholder="Correo electrónico">
             <input type="password" id="password" placeholder="Contraseña">
-            <button onclick="signIn()" style="width: 100%; margin-top: 5px;">Iniciar Sesión</button>
-            <button onclick="signUp()" class="secondary-btn" style="width: 100%; margin-top: 5px;">Registrarse</button>
+            <button onclick="signIn()" style="margin-top: 5px;">Iniciar Sesión</button>
+            <button onclick="signUp()" class="secondary-btn" style="margin-top: 5px;">Registrarse</button>
             <div id="status-msg"></div>
         </div>
     </div>
@@ -175,6 +194,12 @@
             document.getElementById('status-msg').innerText = '';
         }
 
+        function enterFreePlan() {
+            const notice = document.getElementById('free-notification');
+            notice.style.display = 'block';
+            window.scrollTo({ top: document.body.scrollHeight, behavior: 'smooth' });
+        }
+
         // Verificar sesión al cargar la página
         async function checkUser() {
             try {
@@ -187,12 +212,12 @@
                     panel.innerHTML = `
                         <span style="font-size: 14px;">${session.user.email}</span>
                         <span class="badge" id="user-tier">PLAN: CARGANDO...</span>
-                        <button onclick="signOut()" class="secondary-btn" style="padding: 5px 10px; font-size: 12px;">Cerrar Sesión</button>
+                        <button onclick="signOut()" class="secondary-btn" style="padding: 5px 10px; font-size: 12px; width: auto;">Cerrar Sesión</button>
                     `;
                     loadUserTier(session.user.id);
                 } else {
                     panel.innerHTML = `
-                        <button onclick="openAuthModal()" style="padding: 6px 15px; font-size: 13px;">Iniciar Sesión</button>
+                        <button onclick="openAuthModal()" style="padding: 6px 15px; font-size: 13px; width: auto;">Iniciar Sesión</button>
                     `;
                 }
             } catch (err) {
