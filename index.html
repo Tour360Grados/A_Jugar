@@ -1,372 +1,1360 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>¡A Jugar! - Estadísticas de Lotería</title>
-    
-    <!-- SDK de Supabase -->
-    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>¡A Jugar! - Estadísticas y Análisis</title>
+  
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
-    <style>
-        body {
-            font-family: Arial, sans-serif;
-            background-color: #f4f7f6;
-            margin: 0;
-            padding: 0;
-        }
-        header {
-            background-color: #1e293b;
-            color: white;
-            padding: 15px 30px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
-            flex-wrap: wrap;
-            gap: 15px;
-        }
-        .logo-container {
-            display: flex;
-            align-items: center;
-            gap: 15px;
-            cursor: pointer;
-        }
-        header h1 {
-            margin: 0;
-            font-size: 22px;
-            letter-spacing: 0.5px;
-        }
-        
-        /* Esferas 3D estilo Melate con brillo */
-        .balls-group {
-            display: flex;
-            gap: 8px;
-        }
-        .melate-ball {
-            display: inline-flex;
-            justify-content: center;
-            align-items: center;
-            width: 32px;
-            height: 32px;
-            background: radial-gradient(circle at 35% 35%, #ff5252 0%, #d32f2f 55%, #8b0000 100%);
-            color: white;
-            border-radius: 50%;
-            font-size: 14px;
-            font-weight: bold;
-            text-shadow: 0 1px 2px rgba(0,0,0,0.6);
-            box-shadow: inset 0 3px 6px rgba(255,255,255,0.5), 
-                        inset 0 -4px 6px rgba(0,0,0,0.6), 
-                        0 4px 8px rgba(0,0,0,0.4);
-            position: relative;
-            overflow: hidden;
-        }
-        .melate-ball::after {
-            content: '';
-            position: absolute;
-            top: 4px;
-            left: 6px;
-            width: 12px;
-            height: 6px;
-            background: rgba(255, 255, 255, 0.55);
-            border-radius: 50%;
-            transform: rotate(-30deg);
-        }
+  <style>
+    * { 
+      box-sizing: border-box; 
+      margin: 0;
+      padding: 0;
+    }
 
-        .user-panel {
-            display: flex;
-            align-items: center;
-            gap: 15px;
-        }
-        .main-container {
-            max-width: 900px;
-            margin: 30px auto;
-            padding: 20px;
-        }
-        .card {
-            background: white;
-            padding: 25px 30px;
-            border-radius: 8px;
-            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.05);
-            margin-bottom: 20px;
-        }
-        input {
-            width: 100%;
-            padding: 10px;
-            margin: 10px 0;
-            border: 1px solid #ccc;
-            border-radius: 4px;
-            box-sizing: border-box;
-        }
-        button {
-            padding: 12px 20px;
-            border: none;
-            border-radius: 6px;
-            background-color: #2563eb;
-            color: white;
-            font-weight: bold;
-            cursor: pointer;
-            width: 100%;
-            font-size: 15px;
-            transition: background-color 0.2s;
-        }
-        button:hover {
-            background-color: #1d4ed8;
-        }
-        .secondary-btn {
-            background-color: #059669;
-        }
-        .secondary-btn:hover {
-            background-color: #047857;
-        }
-        .badge {
-            background-color: #dbeafe;
-            color: #1d4ed8;
-            padding: 6px 12px;
-            border-radius: 4px;
-            font-size: 13px;
-            font-weight: bold;
-        }
-        /* Modal de Login */
-        .modal {
-            display: none;
-            position: fixed;
-            z-index: 1000;
-            left: 0;
-            top: 0;
-            width: 100%;
-            height: 100%;
-            background-color: rgba(0,0,0,0.5);
-            justify-content: center;
-            align-items: center;
-        }
-        .modal-content {
-            background: white;
-            padding: 30px;
-            border-radius: 8px;
-            width: 100%;
-            max-width: 350px;
-            text-align: center;
-            position: relative;
-        }
-        .close-btn {
-            position: absolute;
-            top: 10px;
-            right: 15px;
-            font-size: 20px;
-            cursor: pointer;
-            color: #666;
-        }
-        #status-msg {
-            margin-top: 10px;
-            font-size: 13px;
-            font-weight: bold;
-        }
-        .tool-box {
-            background: #f8fafc;
-            border: 1px solid #e2e8f0;
-            padding: 20px;
-            border-radius: 6px;
-            margin-top: 15px;
-        }
-        .result-balls {
-            display: flex;
-            gap: 10px;
-            justify-content: center;
-            margin-top: 15px;
-        }
-    </style>
+    body {
+      background-color: #0b111e;
+      color: #ffffff;
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      padding: 4px 2px;
+      display: flex;
+      justify-content: center;
+      width: 100%;
+      min-height: 100vh;
+      overflow-x: hidden;
+    }
+
+    .app-container {
+      width: 100%;
+      max-width: 500px;
+      text-align: center;
+      padding: 0 2px;
+    }
+
+    header { margin-bottom: 6px; }
+    header h1 { 
+      font-size: 1.25rem; 
+      margin-bottom: 2px; 
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+    }
+    header p { color: #8c9ba5; font-size: 0.7rem; }
+
+    /* Selectores y Navegación */
+    .game-selector, .module-nav {
+      display: flex;
+      gap: 3px;
+      justify-content: center;
+      flex-wrap: wrap;
+      margin-bottom: 6px;
+      width: 100%;
+    }
+
+    .game-btn, .mod-btn {
+      background-color: #1e293b;
+      color: #94a3b8;
+      border: 1px solid transparent;
+      padding: 4px 5px;
+      border-radius: 5px;
+      cursor: pointer;
+      font-weight: bold;
+      font-size: 0.6rem;
+      transition: all 0.2s ease;
+      flex: 1 1 auto;
+      text-align: center;
+      white-space: nowrap;
+    }
+
+    .mod-btn {
+      background-color: #111827;
+      border-color: #1f2937;
+      font-size: 0.58rem;
+    }
+
+    .game-btn.active {
+      background-color: #4f46e5;
+      color: #ffffff;
+      border-color: #6366f1;
+    }
+
+    .mod-btn.active {
+      background-color: #0284c7;
+      color: #ffffff;
+      border-color: #38bdf8;
+    }
+
+    /* Elementos Bloqueados por Plan */
+    .locked {
+      opacity: 0.4;
+      cursor: not-allowed !important;
+      position: relative;
+    }
+    .locked::after {
+      content: '🔒';
+      font-size: 0.5rem;
+      margin-left: 2px;
+    }
+
+    /* Tarjetas de Módulo */
+    .card-panel {
+      background-color: #161f30;
+      border-radius: 8px;
+      padding: 8px 6px;
+      box-shadow: 0 4px 15px rgba(0,0,0,0.3);
+      text-align: left;
+      width: 100%;
+      margin-bottom: 6px;
+    }
+
+    .card-title {
+      font-size: 0.8rem;
+      margin-bottom: 5px;
+      color: #38bdf8;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 4px;
+      word-break: break-word;
+    }
+
+    /* Estilos del Radar / Boleto Térmico */
+    .ticket-grid {
+      display: grid;
+      gap: 3px;
+      background: #0f172a;
+      padding: 6px;
+      border-radius: 6px;
+      border: 1px solid #1e293b;
+      width: 100%;
+      margin: 0 auto;
+    }
+
+    .ticket-cell {
+      aspect-ratio: 1;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      border-radius: 4px;
+      background-color: #1e293b;
+      font-size: clamp(0.85rem, 3.2vw, 1.1rem);
+      font-weight: bold;
+      color: #94a3b8;
+      border: 1px solid #334155;
+      min-width: 0;
+      position: relative;
+      cursor: pointer;
+      user-select: none;
+    }
+
+    .ticket-cell.hot { background-color: #ef4444; color: #fff; border-color: #f87171; }
+    .ticket-cell.warm { background-color: #eab308; color: #000; border-color: #facc15; }
+    .ticket-cell.cold { background-color: #3b82f6; color: #fff; border-color: #60a5fa; }
+    .ticket-cell.empty { background-color: transparent; border: none; pointer-events: none; }
+
+    .ticket-cell.suggested {
+      border: 3px solid #ffffff !important;
+      box-shadow: 0 0 12px #34d399, inset 0 0 6px rgba(255, 255, 255, 0.9) !important;
+      transform: scale(1.05);
+      z-index: 10;
+    }
+    .ticket-cell.suggested::after {
+      content: '★';
+      position: absolute;
+      top: 1px;
+      right: 3px;
+      font-size: 0.75rem;
+      color: #ffffff;
+    }
+
+    .ticket-cell .count-badge {
+      font-size: clamp(0.65rem, 2.2vw, 0.85rem);
+      opacity: 0.95;
+      margin-top: 1px;
+      font-weight: bold;
+    }
+
+    /* Esferas Fluidas */
+    .balls-container {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      gap: 3px;
+      flex-wrap: wrap;
+      width: 100%;
+    }
+
+    .ball {
+      width: clamp(22px, 5.5vw, 30px);
+      height: clamp(22px, 5.5vw, 30px);
+      border-radius: 50%;
+      background-color: #2a374a;
+      color: #ffffff;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: bold;
+      font-size: clamp(0.6rem, 1.8vw, 0.75rem);
+      flex-shrink: 0;
+    }
+    .ball.adicional { background-color: #eab308; color: #000000; }
+    .ball.hot { background-color: #ef4444; color: #fff; }
+    .ball.cold { background-color: #3b82f6; color: #fff; }
+
+    /* Frecuencias */
+    .freq-grid {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+      margin-top: 4px;
+      max-height: 350px;
+      overflow-y: auto;
+      padding-right: 2px;
+    }
+
+    .freq-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      background-color: #0f172a;
+      padding: 4px 6px;
+      border-radius: 5px;
+      border: 1px solid #1e293b;
+    }
+
+    .freq-ball { width: 22px; height: 22px; font-size: 0.6rem; }
+
+    .freq-bar-container {
+      flex: 1;
+      margin: 0 6px;
+      background: #1e293b;
+      height: 4px;
+      border-radius: 2px;
+      overflow: hidden;
+    }
+
+    .freq-bar { height: 100%; background: #38bdf8; border-radius: 2px; }
+    .freq-count { font-size: 0.65rem; font-weight: bold; color: #38bdf8; width: 44px; text-align: right; }
+
+    /* Métricas */
+    .metric-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 4px;
+      padding: 5px 0;
+      border-bottom: 1px solid #1e293b;
+      font-size: 0.7rem;
+    }
+    .metric-label { color: #94a3b8; flex: 1; min-width: 0; }
+    .metric-value { font-weight: bold; text-align: right; flex-shrink: 0; }
+    .status-ok { color: #22c55e; }
+    .status-out { color: #ef4444; }
+
+    /* Formularios y Botones */
+    .input-group {
+      display: flex;
+      gap: 4px;
+      margin-bottom: 5px;
+    }
+    .input-field {
+      background: #0f172a;
+      border: 1px solid #334155;
+      color: #fff;
+      padding: 5px 6px;
+      border-radius: 5px;
+      width: 100%;
+      font-size: 0.7rem;
+    }
+    .btn-action {
+      background: #4f46e5;
+      color: #fff;
+      border: none;
+      padding: 6px 8px;
+      border-radius: 5px;
+      cursor: pointer;
+      font-weight: bold;
+      width: 100%;
+      font-size: 0.72rem;
+      margin-top: 3px;
+    }
+    .btn-action:active { opacity: 0.85; }
+
+    .loader { text-align: center; padding: 8px; color: #8c9ba5; font-size: 0.7rem; }
+    .tab-content { display: none; }
+    .tab-content.active { display: block; }
+
+    /* Animación de pista de zoom para móviles */
+    @keyframes pulseZoom {
+      0% { transform: scale(1); }
+      50% { transform: scale(1.18); }
+      100% { transform: scale(1); }
+    }
+    @keyframes fadeInOut {
+      0% { opacity: 0; transform: translate(-50%, 15px); }
+      10% { opacity: 1; transform: translate(-50%, 0); }
+      90% { opacity: 1; transform: translate(-50%, 0); }
+      100% { opacity: 0; transform: translate(-50%, -10px); }
+    }
+    .zoom-hint-banner {
+      position: fixed;
+      bottom: 30px;
+      left: 50%;
+      transform: translateX(-50%);
+      background: rgba(15, 23, 42, 0.96);
+      border: 1.5px solid #38bdf8;
+      color: #fff;
+      padding: 12px 20px;
+      border-radius: 24px;
+      font-size: 0.82rem;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      box-shadow: 0 6px 25px rgba(0,0,0,0.7);
+      z-index: 99999;
+      animation: fadeInOut 6.5s ease forwards;
+      pointer-events: none;
+      white-space: nowrap;
+    }
+    .zoom-hint-icon {
+      animation: pulseZoom 1.4s infinite ease-in-out;
+      font-size: 1.2rem;
+    }
+  </style>
 </head>
 <body>
 
-    <!-- Barra Superior -->
+  <div class="app-container">
     <header>
-        <div class="logo-container" onclick="location.reload()">
-            <h1>¡A Jugar!</h1>
-            <div class="balls-group">
-                <span class="melate-ball">1</span>
-                <span class="melate-ball">2</span>
-                <span class="melate-ball">3</span>
-                <span class="melate-ball">4</span>
-                <span class="melate-ball">5</span>
-                <span class="melate-ball">6</span>
-            </div>
-        </div>
-        <div class="user-panel" id="header-user-panel">
-            <!-- Se carga dinámicamente -->
-        </div>
+      <h1>
+        ¡A Jugar! 
+        <svg width="28" height="28" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" style="vertical-align: middle; display: inline-block;">
+          <circle cx="12" cy="12" r="10.5" fill="#ef4444" stroke="#f87171" stroke-width="1"></circle>
+          <circle cx="12" cy="12" r="6.5" fill="#ffffff"></circle>
+          <text x="12" y="15" font-size="8.5" font-weight="bold" fill="#1e293b" text-anchor="middle">4</text>
+        </svg>
+      </h1>
+      <p>
+        Nivel actual: <strong id="lbl-plan-activo" style="color:#38bdf8; text-transform:uppercase;">Free</strong> 
+        <span id="lbl-countdown" style="color: #eab308; font-weight: bold; margin-left: 6px;"></span>
+        <span style="font-size:0.55rem; cursor:pointer; text-decoration:underline; margin-left: 4px;" onclick="cambiarPlanSimulado()">(Cambiar)</span>
+      </p>
     </header>
 
-    <!-- Aplicación Principal (Directo al Panel Libre) -->
-    <div class="main-container">
-        <div class="card">
-            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; flex-wrap: wrap; gap: 10px;">
-                <h2 style="margin: 0;">Panel de Control Estadístico</h2>
-                <span class="badge" id="current-plan-badge">PLAN: FREE</span>
-            </div>
-            <p>Herramientas de libre acceso para procesamiento de frecuencias y combinaciones de sorteos.</p>
-            <hr style="border: 0; border-top: 1px solid #eee; margin: 20px 0;">
-            
-            <!-- Herramienta Interactiva del Plan Free -->
-            <div class="tool-box">
-                <h3 style="color: #1e293b; margin-top: 0;">🎲 Generador y Validador Base (Plan Free)</h3>
-                <p style="font-size: 14px; color: #475569;">Verifica tus combinaciones de 6 números para el sorteo:</p>
-                <input type="text" id="user-combination" placeholder="Ej. 5, 12, 23, 34, 45, 52">
-                <button onclick="evaluateCombination()" class="secondary-btn">Analizar Combinación</button>
-                <div id="evaluation-result" class="result-balls"></div>
-            </div>
-
-            <!-- Sección de Ascenso a Planes Superiores -->
-            <div style="background: #eff6ff; padding: 20px; border-radius: 6px; border: 1px solid #bfdbfe; margin-top: 20px;">
-                <h3 style="color: #1e40af; margin-top: 0;">⭐ Desbloquea Funciones Avanzadas</h3>
-                <p style="color: #1e3a8a; margin-bottom: 15px;">Accede a matrices de frecuencia históricas completas y algoritmos de predicción con tu cuenta Oro o Premium.</p>
-                <button onclick="openAuthModal()" style="max-width: 300px;">Iniciar Sesión / Elegir Plan</button>
-            </div>
-        </div>
+    <!-- Selector de Juego -->
+    <div class="game-selector">
+      <button class="game-btn active" onclick="cambiarJuego('historico_melate', 56, this)">Melate</button>
+      <button class="game-btn" id="btn-revancha" onclick="cambiarJuego('historico_revancha', 56, this)">Revancha</button>
+      <button class="game-btn" id="btn-revanchita" onclick="cambiarJuego('historico_revanchita', 56, this)">Revanchita</button>
+      <button class="game-btn" id="btn-retro" onclick="cambiarJuego('historico_melate_retro', 39, this)">Retro</button>
     </div>
 
-    <!-- Modal de Autenticación -->
-    <div id="auth-modal" class="modal">
-        <div class="modal-content">
-            <span class="close-btn" onclick="closeAuthModal()">&times;</span>
-            <h2>Acceso a tu Cuenta</h2>
-            <p style="font-size: 13px; color: #666;">Inicia sesión para activar tu membresía Oro o Premium.</p>
-            <input type="email" id="email" placeholder="Correo electrónico">
-            <input type="password" id="password" placeholder="Contraseña">
-            <button onclick="signIn()" style="margin-top: 5px;">Iniciar Sesión</button>
-            <button onclick="signUp()" class="secondary-btn" style="margin-top: 5px; background-color: #4b5563;">Registrarse</button>
-            <div id="status-msg"></div>
-        </div>
+    <!-- Navegación de Módulos -->
+    <div class="module-nav">
+      <button class="mod-btn active" onclick="cambiarModulo('tab-resumen', this)">📊 Últimos</button>
+      <button class="mod-btn" id="btn-mod-frec" onclick="cambiarModulo('tab-frecuencias', this)">📈 Frec.</button>
+      <button class="mod-btn" id="btn-mod-radar" onclick="cambiarModulo('tab-radar', this)">🎯 Radar</button>
+      <button class="mod-btn" id="btn-mod-rangos" onclick="cambiarModulo('tab-rangos', this)">📐 Rangos</button>
+      <button class="mod-btn" onclick="cambiarModulo('tab-sugerencias', this)">🔮 Suger.</button>
+      <button class="mod-btn" onclick="cambiarModulo('tab-jugadas', this)">🎟️ Boletos</button>
+      <button class="mod-btn" onclick="cambiarModulo('tab-planes', this)" style="color:#eab308; font-weight:bold;">💎 Planes</button>
     </div>
 
-    <!-- Lógica de JavaScript -->
-    <script>
-        const SUPABASE_URL = 'https://jcvfndovnwfqacxuhegd.supabase.co';
-        const SUPABASE_ANON_KEY = 'sb_publishable_C7L3U-1Wt78PtPog06WRgA_smUPA4AR';
+    <!-- Pestaña 1: Últimos Sorteos -->
+    <div id="tab-resumen" class="tab-content active">
+      <div id="resumen-container" class="card-panel">
+        <div class="loader">Cargando datos...</div>
+      </div>
+    </div>
+
+    <!-- Pestaña 2: Frecuencia -->
+    <div id="tab-frecuencias" class="tab-content">
+      <div class="card-panel">
+        <h3 class="card-title">Ranking de Frecuencias <span style="font-size:0.55rem; color:#eab308;">(Platino)</span></h3>
+        <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 6px; font-size: 0.65rem;">
+          <span style="color: #8c9ba5;">Rango de análisis:</span>
+          <select id="select-freq-rango" class="input-field" style="width: auto; padding: 2px 4px; font-size: 0.65rem;" onchange="actualizarFrecuenciasSegunRango()">
+            <option value="10">Últimos 10</option>
+            <option value="20">Últimos 20</option>
+            <option value="50">Últimos 50</option>
+            <option value="100">Últimos 100</option>
+            <option value="1000">Últimos 1000</option>
+            <option value="todos" selected>Todos (Histórico)</option>
+          </select>
+        </div>
+        <div id="frecuencias-lista" class="freq-grid">
+          <div class="loader">Calculando...</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Pestaña Radar -->
+    <div id="tab-radar" class="tab-content">
+      <div class="card-panel">
+        <h3 class="card-title">Radar de Frecuencia <span style="font-size:0.55rem; color:#eab308;" id="lbl-radar-plan">(Oro+)</span></h3>
+        <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 6px; font-size: 0.65rem;">
+          <span style="color: #8c9ba5;">Rango de análisis:</span>
+          <select id="select-radar-rango" class="input-field" style="width: auto; padding: 2px 4px; font-size: 0.65rem;" onchange="actualizarRadarSegunRango()">
+            <option value="10">Últimos 10</option>
+            <option value="20" selected>Últimos 20</option>
+            <option value="50">Últimos 50</option>
+            <option value="100">Últimos 100</option>
+            <option value="1000">Últimos 1000</option>
+            <option value="todos">Todos (Histórico)</option>
+          </select>
+        </div>
+        <!-- Leyenda Térmica del Radar -->
+        <div style="display: flex; justify-content: center; gap: 8px; font-size: 0.58rem; margin-bottom: 6px; background: #0f172a; padding: 4px; border-radius: 4px; border: 1px solid #1e293b;">
+          <span style="display: flex; align-items: center; gap: 3px;"><span style="width: 8px; height: 8px; background: #ef4444; border-radius: 2px;"></span> <strong style="color:#ef4444;">Calientes</strong></span>
+          <span style="display: flex; align-items: center; gap: 3px;"><span style="width: 8px; height: 8px; background: #eab308; border-radius: 2px;"></span> <strong style="color:#eab308;">Tibios</strong></span>
+          <span style="display: flex; align-items: center; gap: 3px;"><span style="width: 8px; height: 8px; background: #3b82f6; border-radius: 2px;"></span> <strong style="color:#3b82f6;">Fríos</strong></span>
+        </div>
+        <p style="font-size: 0.65rem; color: #8c9ba5; margin-bottom: 5px;">Toca cualquier número para seleccionarlo o generar una sugerencia.</p>
+        <div id="radar-ticket-container">
+          <div class="loader">Generando radar...</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Pestaña 3: Rangos y Filtros -->
+    <div id="tab-rangos" class="tab-content">
+      <div class="card-panel">
+        <h3 class="card-title">Análisis del Rango <span style="font-size:0.55rem; color:#eab308;">(Platino)</span></h3>
+        <p style="font-size: 0.65rem; color: #8c9ba5; margin-bottom: 4px;">Sobre los últimos 20 sorteos.</p>
+        <div id="rangos-metrics">
+          <div class="loader">Analizando...</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Pestaña 4: Sugerencias -->
+    <div id="tab-sugerencias" class="tab-content">
+      <div class="card-panel">
+        <h3 class="card-title" style="color: #fff;">Generador Estocástico</h3>
+        <p style="font-size: 0.68rem; color: #94a3b8; margin-bottom: 5px;">Genera una combinación analizada con validación histórica.</p>
+        <button class="btn-action" onclick="generarSugerencia()">🔮 Generar Combinación</button>
+        <div id="sugerencia-result" style="margin-top:6px;"></div>
+      </div>
+    </div>
+
+    <!-- Pestaña 5: Mis Jugadas -->
+    <div id="tab-jugadas" class="tab-content">
+      <div class="card-panel">
+        <h3 class="card-title">Guardar Jugada <span id="lbl-juego-actual" style="color:#38bdf8;">(Melate)</span></h3>
+        <div class="input-group">
+          <input type="text" id="jugada-alias" class="input-field" placeholder="Nombre o alias (ej. Boleto 1)">
+        </div>
+        <div class="input-group">
+          <input type="text" id="jugada-numeros" class="input-field" placeholder="6 números separados por comas">
+        </div>
+        <button class="btn-action" style="background: #10b981;" onclick="guardarJugada()">Guardar Boleto</button>
+
+        <h3 class="card-title" style="margin-top:10px;">Mis Boletos Guardados (Todos los Sorteos)</h3>
+        <div id="mis-jugadas-lista">
+          <div class="loader">Cargando jugadas...</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Pestaña 6: Planes -->
+    <div id="tab-planes" class="tab-content">
+      <div class="card-panel">
+        <h3 class="card-title">💎 Niveles de Suscripción</h3>
+        <p style="font-size: 0.65rem; color: #8c9ba5; margin-bottom: 8px;">Elige o simula tu nivel para desbloquear herramientas.</p>
         
-        const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+        <button class="btn-action" style="background: #38bdf8; color:#000; margin-bottom: 8px;" onclick="iniciarPruebaPlatino()">🚀 Probar Plan Platino Gratis (5 min)</button>
 
-        function showMessage(msg, isError = false) {
-            const statusDiv = document.getElementById('status-msg');
-            statusDiv.style.color = isError ? '#dc2626' : '#2563eb';
-            statusDiv.innerText = msg;
+        <div style="font-size:0.68rem; line-height: 1.4; color: #cbd5e1; margin-bottom: 8px;">
+          • <b>Free ($0):</b> Melate (últimos 10 sorteos), sugerencias y mis boletos guardados.<br>
+          • <b>Oro ($5/mes):</b> Melate, Revancha y Revanchita (últimos 10), sugerencias y Radar liberado.<br>
+          • <b>Platino ($8/mes):</b> Todo lo anterior + Retro, Frecuencias con selección de rangos, Radar con selección de rangos, Rangos y validación histórica única.
+        </div>
+        <button class="btn-action" style="background: #eab308; color:#000;" onclick="cambiarPlanSimulado()">Cambiar Plan de Prueba</button>
+      </div>
+    </div>
+
+    <!-- Footer con Marca Nativa de Tour360grados -->
+    <footer style="margin-top: 15px; padding: 12px 0 6px 0; text-align: center; border-top: 1px solid #1e293b;">
+      <div style="font-family: 'Segoe UI', sans-serif; font-weight: 900; font-size: 1.2rem; letter-spacing: 0.5px; margin-bottom: 1px;">
+        <span style="color: #8c9ba5;">TOUR</span><span style="color: #a3cc29;">360°</span>
+      </div>
+      <p style="font-size: 0.52rem; color: #94a3b8; letter-spacing: 1px; text-transform: uppercase;">Una Experiencia envolvente</p>
+    </footer>
+
+  </div>
+
+  <script>
+    const SUPABASE_URL = 'https://jcvfndovnwfqacxuhegd.supabase.co';
+    const SUPABASE_ANON_KEY = 'sb_publishable_C7L3U-1Wt78PtPog06WRgA_smUPA4AR'; 
+    const db = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+    let juegoActual = 'historico_melate';
+    let maxNumActual = 56;
+    let datosHistoricos = [];
+    let historialesCache = {};
+    let calientesGlobales = [];
+    let friosGlobales = [];
+    let sugerenciaActual = []; 
+    let rangoResumenActual = '10';
+
+    let usuarioPlan = 'free'; 
+    let trialTimer = null;
+
+    const NOMBRES_JUEGOS = {
+      'historico_melate': 'Melate',
+      'historico_revancha': 'Revancha',
+      'historico_revanchita': 'Revanchita',
+      'historico_melate_retro': 'Melate Retro'
+    };
+
+    function mostrarPistaZoomMovil() {
+      if (sessionStorage.getItem('zoom_hint_visto')) return;
+      if (window.innerWidth > 768) return;
+
+      const hint = document.createElement('div');
+      hint.className = 'zoom-hint-banner';
+      hint.innerHTML = `<span class="zoom-hint-icon">🔍</span> <span>Expande para ver mejor</span>`;
+      document.body.appendChild(hint);
+
+      sessionStorage.setItem('zoom_hint_visto', 'true');
+
+      setTimeout(() => {
+        hint.style.transition = 'opacity 0.6s ease';
+        hint.style.opacity = '0';
+        setTimeout(() => hint.remove(), 600);
+      }, 6000);
+    }
+
+    function iniciarPruebaPlatino() {
+      const trialUsado = localStorage.getItem('a_jugar_trial_usado');
+      if (trialUsado === 'true') {
+        alert('⚠️ Ya has utilizado tu prueba gratuita de 5 minutos anteriormente.');
+        return;
+      }
+
+      const duracionMinutos = 5;
+      const tiempoExpiracion = Date.now() + duracionMinutos * 60 * 1000;
+
+      localStorage.setItem('a_jugar_trial_usado', 'true');
+      localStorage.setItem('a_jugar_trial_expires', tiempoExpiracion);
+
+      usuarioPlan = 'platino';
+      actualizarInterfazPlan();
+      iniciarCuentaRegresiva(tiempoExpiracion);
+
+      alert('🎉 ¡Listo! Has activado el Plan Platino por los próximos 5 minutos. Disfruta de todas las herramientas.');
+    }
+
+    function verificarEstadoPrueba() {
+      const tiempoExpiracion = localStorage.getItem('a_jugar_trial_expires');
+      
+      if (tiempoExpiracion) {
+        const ahora = Date.now();
+        if (ahora < tiempoExpiracion) {
+          usuarioPlan = 'platino';
+          actualizarInterfazPlan();
+          iniciarCuentaRegresiva(parseInt(tiempoExpiracion));
+        } else {
+          localStorage.removeItem('a_jugar_trial_expires');
+          usuarioPlan = 'free';
+          actualizarInterfazPlan();
+        }
+      }
+    }
+
+    function actualizarInterfazPlan() {
+      document.getElementById('lbl-plan-activo').textContent = usuarioPlan;
+      
+      const lblRadarPlan = document.getElementById('lbl-radar-plan');
+      if (lblRadarPlan) {
+        if (usuarioPlan === 'platino') {
+          lblRadarPlan.textContent = '(Platino)';
+        } else if (usuarioPlan === 'oro') {
+          lblRadarPlan.textContent = '(Oro)';
+        } else {
+          lblRadarPlan.textContent = '(Oro+)';
+        }
+      }
+
+      aplicarRestriccionesPlan();
+      actualizarResumenSegunRango();
+    }
+
+    function iniciarCuentaRegresiva(tiempoExpiracion) {
+      if (trialTimer) clearInterval(trialTimer);
+
+      const lblCountdown = document.getElementById('lbl-countdown');
+
+      trialTimer = setInterval(() => {
+        const ahora = Date.now();
+        const distancia = tiempoExpiracion - ahora;
+
+        if (distancia <= 0) {
+          clearInterval(trialTimer);
+          localStorage.removeItem('a_jugar_trial_expires');
+          usuarioPlan = 'free';
+          actualizarInterfazPlan();
+          lblCountdown.textContent = '';
+          alert('⏰ Tu prueba de 5 minutos del Plan Platino ha finalizado. La cuenta ha vuelto al Plan Free.');
+          return;
         }
 
-        function openAuthModal() {
-            document.getElementById('auth-modal').style.display = 'flex';
+        const minutos = Math.floor((distancia % (1000 * 60 * 60)) / (1000 * 60));
+        const segundos = Math.floor((distancia % (1000 * 60)) / 1000);
+
+        lblCountdown.textContent = `⏱️ ${minutos}:${segundos < 10 ? '0' : ''}${segundos}`;
+      }, 1000);
+    }
+
+    function cambiarPlanSimulado() {
+      if (usuarioPlan === 'free') usuarioPlan = 'oro';
+      else if (usuarioPlan === 'oro') usuarioPlan = 'platino';
+      else usuarioPlan = 'free';
+
+      actualizarInterfazPlan();
+      cargarDatosCompletos();
+    }
+
+    function aplicarRestriccionesPlan() {
+      const btnRevancha = document.getElementById('btn-revancha');
+      const btnRevanchita = document.getElementById('btn-revanchita');
+      const btnRetro = document.getElementById('btn-retro');
+      const btnModRadar = document.getElementById('btn-mod-radar');
+      const btnModFrec = document.getElementById('btn-mod-frec');
+      const btnModRangos = document.getElementById('btn-mod-rangos');
+
+      if (usuarioPlan === 'free') {
+        btnRevancha.classList.add('locked');
+        btnRevanchita.classList.add('locked');
+        btnRetro.classList.add('locked');
+        btnModRadar.classList.add('locked');
+        btnModFrec.classList.add('locked');
+        btnModRangos.classList.add('locked');
+      } else if (usuarioPlan === 'oro') {
+        btnRevancha.classList.remove('locked');
+        btnRevanchita.classList.remove('locked');
+        btnRetro.classList.add('locked');
+        btnModRadar.classList.remove('locked');
+        btnModFrec.classList.add('locked');
+        btnModRangos.classList.add('locked');
+      } else { 
+        btnRevancha.classList.remove('locked');
+        btnRevanchita.classList.remove('locked');
+        btnRetro.classList.remove('locked');
+        btnModRadar.classList.remove('locked');
+        btnModFrec.classList.remove('locked');
+        btnModRangos.classList.remove('locked');
+      }
+    }
+
+    function formatearFechaMX(fechaRaw) {
+      if (!fechaRaw) return '';
+      const partes = String(fechaRaw).split('T')[0].split('-');
+      if (partes.length === 3) return `${partes[2]}/${partes[1]}/${partes[0]}`;
+      return fechaRaw;
+    }
+
+    async function cambiarJuego(tabla, maxNum, el) {
+      if (tabla === 'historico_melate_retro' && usuarioPlan !== 'platino') {
+        alert('🔒 Melate Retro está disponible exclusivamente en el Plan Platino.');
+        return;
+      }
+      if ((tabla === 'historico_revancha' || tabla === 'historico_revanchita') && usuarioPlan === 'free') {
+        alert('🔒 Los sorteos de Revancha y Revanchita están disponibles a partir del Plan Oro.');
+        return;
+      }
+
+      juegoActual = tabla;
+      maxNumActual = maxNum;
+      sugerenciaActual = []; 
+      document.querySelectorAll('.game-btn').forEach(btn => btn.classList.remove('active'));
+      if (el) el.classList.add('active');
+      
+      const lbl = document.getElementById('lbl-juego-actual');
+      if (lbl) lbl.textContent = `(${NOMBRES_JUEGOS[juegoActual]})`;
+
+      await cargarDatosCompletos();
+      if (document.getElementById('tab-jugadas').classList.contains('active')) {
+        cargarMisJugadas();
+      }
+    }
+
+    async function cambiarModulo(tabId, el) {
+      if (usuarioPlan === 'free') {
+        if (tabId === 'tab-radar' || tabId === 'tab-frecuencias' || tabId === 'tab-rangos') {
+          alert('🔒 Esta sección avanzada requiere una suscripción Oro o Platino.');
+          return;
+        }
+      }
+      if (usuarioPlan === 'oro') {
+        if (tabId === 'tab-frecuencias' || tabId === 'tab-rangos') {
+          alert('🔒 Las frecuencias avanzadas y rangos están disponibles en el Plan Platino.');
+          return;
+        }
+      }
+
+      document.querySelectorAll('.tab-content').forEach(tab => tab.classList.remove('active'));
+      document.querySelectorAll('.mod-btn').forEach(btn => btn.classList.remove('active'));
+      
+      document.getElementById(tabId).classList.add('active');
+      if (el) el.classList.add('active');
+
+      if (datosHistoricos.length === 0) {
+        await cargarDatosCompletos();
+      }
+
+      if (tabId === 'tab-jugadas') cargarMisJugadas();
+      if (tabId === 'tab-radar') actualizarRadarSegunRango();
+      if (tabId === 'tab-frecuencias') actualizarFrecuenciasSegunRango();
+      if (tabId === 'tab-rangos') calcularRangos(datosHistoricos.slice(0, 20));
+    }
+
+    function verSugerenciaEnRadar(arr) {
+      sugerenciaActual = arr;
+      cambiarModulo('tab-radar', document.getElementById('btn-mod-radar'));
+    }
+
+    async function verBoletoEnRadar(juegoBoleto, numsBoleto) {
+      if (juegoBoleto !== juegoActual) {
+        let btnSel = null;
+        if (juegoBoleto === 'historico_melate') btnSel = document.querySelector('.game-btn:nth-child(1)');
+        else if (juegoBoleto === 'historico_revancha') btnSel = document.getElementById('btn-revancha');
+        else if (juegoBoleto === 'historico_revanchita') btnSel = document.getElementById('btn-revanchita');
+        else if (juegoBoleto === 'historico_melate_retro') btnSel = document.getElementById('btn-retro');
+        
+        let maxNum = juegoBoleto === 'historico_melate_retro' ? 39 : 56;
+        await cambiarJuego(juegoBoleto, maxNum, btnSel);
+      }
+      sugerenciaActual = [...numsBoleto];
+      cambiarModulo('tab-radar', document.getElementById('btn-mod-radar'));
+    }
+
+    async function cargarDatosCompletos() {
+      try {
+        const { data, error } = await db
+          .from(juegoActual)
+          .select('*')
+          .order('sorteo', { ascending: false })
+          .limit(1500);
+
+        if (error || !data || data.length === 0) {
+          datosHistoricos = [];
+          historialesCache[juegoActual] = [];
+          return;
         }
 
-        function closeAuthModal() {
-            document.getElementById('auth-modal').style.display = 'none';
-            document.getElementById('status-msg').innerText = '';
+        datosHistoricos = data;
+        historialesCache[juegoActual] = data;
+
+        actualizarResumenSegunRango();
+        actualizarFrecuenciasSegunRango();
+        calcularRangos(datosHistoricos.slice(0, 20));
+
+        if (usuarioPlan !== 'free') {
+          actualizarRadarSegunRango();
+        }
+      } catch (err) {
+        console.error(err);
+        datosHistoricos = [];
+      }
+    }
+
+    async function obtenerHistorialJuego(juego) {
+      if (historialesCache[juego] && historialesCache[juego].length > 0) {
+        return historialesCache[juego];
+      }
+      try {
+        const { data } = await db
+          .from(juego)
+          .select('*')
+          .order('sorteo', { ascending: false })
+          .limit(1500);
+        historialesCache[juego] = data || [];
+        return historialesCache[juego];
+      } catch (err) {
+        return [];
+      }
+    }
+
+    function actualizarResumenSegunRango() {
+      const select = document.getElementById('select-resumen-rango');
+      if (select) rangoResumenActual = select.value;
+
+      let datosMuestra = datosHistoricos;
+      if (usuarioPlan === 'free') {
+        datosMuestra = datosHistoricos.slice(0, 10);
+      } else if (rangoResumenActual !== 'todos') {
+        const limite = parseInt(rangoResumenActual);
+        datosMuestra = datosHistoricos.slice(0, limite);
+      }
+      renderizarResumen(datosMuestra);
+    }
+
+    function renderizarResumen(historialMuestra) {
+      const container = document.getElementById('resumen-container');
+
+      let selectorHtml = '';
+      if (usuarioPlan === 'free') {
+        selectorHtml = `
+          <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 6px; font-size: 0.65rem;">
+            <span style="color: #8c9ba5;">Rango de sorteos:</span>
+            <span style="color: #38bdf8; font-weight: bold;">Últimos 10 (Plan Free 🔒)</span>
+          </div>
+        `;
+      } else {
+        selectorHtml = `
+          <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 6px; font-size: 0.65rem;">
+            <span style="color: #8c9ba5;">Rango de sorteos:</span>
+            <select id="select-resumen-rango" class="input-field" style="width: auto; padding: 2px 4px; font-size: 0.65rem;" onchange="actualizarResumenSegunRango()">
+              <option value="10">Últimos 10</option>
+              <option value="20">Últimos 20</option>
+              <option value="50">Últimos 50</option>
+              <option value="100">Últimos 100</option>
+              <option value="1000">Últimos 1000</option>
+              <option value="todos">Todos (Histórico)</option>
+            </select>
+          </div>
+        `;
+      }
+
+      const htmlSorteos = historialMuestra.map(sorteo => {
+        const numSorteo = sorteo.sorteo || sorteo.numero_sorteo || sorteo.id || '';
+        const fecha = sorteo.fecha ? formatearFechaMX(sorteo.fecha) : '';
+        const nums = extraerNumeros(sorteo);
+        const adicional = sorteo.adicional !== undefined ? sorteo.adicional : sorteo.r7;
+
+        let esferas = nums.map(n => `<div class="ball">${n}</div>`).join('');
+        if (adicional !== undefined && adicional !== null && adicional !== '') {
+          esferas += `<div class="ball adicional">${adicional}</div>`;
         }
 
-        function evaluateCombination() {
-            const inputVal = document.getElementById('user-combination').value;
-            const resultDiv = document.getElementById('evaluation-result');
-            
-            if (!inputVal.trim()) {
-                resultDiv.innerHTML = '<span style="color: #dc2626; font-size: 13px; font-weight: bold;">Por favor ingresa números separados por comas.</span>';
-                return;
+        return `
+          <div style="background: #0f172a; padding: 5px 6px; border-radius: 5px; margin-bottom: 5px; border: 1px solid #1e293b;">
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:3px;">
+              <strong style="font-size:0.7rem; color:#38bdf8;">Sorteo #${numSorteo}</strong>
+              <span style="color:#8c9ba5; font-size:0.65rem;">${fecha}</span>
+            </div>
+            <div class="balls-container">${esferas}</div>
+          </div>
+        `;
+      }).join('');
+
+      container.innerHTML = `
+        <h3 class="card-title" style="margin-bottom: 6px;">Historial de Sorteos (${NOMBRES_JUEGOS[juegoActual]})</h3>
+        ${selectorHtml}
+        <div style="max-height: 380px; overflow-y: auto; padding-right: 2px;">
+          ${htmlSorteos}
+        </div>
+      `;
+
+      const select = document.getElementById('select-resumen-rango');
+      if (select) {
+        select.value = rangoResumenActual;
+      }
+    }
+
+    function actualizarRadarSegunRango() {
+      const select = document.getElementById('select-radar-rango');
+      const val = select ? select.value : '20';
+      let datosMuestra = datosHistoricos;
+
+      if (val !== 'todos') {
+        const limite = parseInt(val);
+        datosMuestra = datosHistoricos.slice(0, limite);
+      }
+      renderizarRadar(datosMuestra);
+    }
+
+    function renderizarRadar(historialMuestra) {
+      const container = document.getElementById('radar-ticket-container');
+      if (!container || !historialMuestra || historialMuestra.length === 0) return;
+
+      const conteo = {};
+      for (let i = 1; i <= maxNumActual; i++) conteo[i] = 0;
+
+      historialMuestra.forEach(sorteo => {
+        const nums = extraerNumeros(sorteo);
+        nums.forEach(n => { if (conteo[n] !== undefined) conteo[n]++; });
+      });
+
+      const listaFrecuencias = [];
+      for (let i = 1; i <= maxNumActual; i++) {
+        listaFrecuencias.push({ num: i, hits: conteo[i] });
+      }
+      listaFrecuencias.sort((a, b) => b.hits - a.hits);
+
+      const totalNum = maxNumActual;
+      const tercioCount = Math.floor(totalNum / 3);
+      
+      const hotNums = new Set();
+      const coldNums = new Set();
+
+      for (let i = 0; i < totalNum; i++) {
+        if (i < tercioCount) {
+          hotNums.add(listaFrecuencias[i].num);
+        } else if (i >= totalNum - tercioCount) {
+          coldNums.add(listaFrecuencias[i].num);
+        }
+      }
+
+      const maxCols = maxNumActual === 39 ? 4 : 6;
+      let gridHtml = `<div class="ticket-grid" style="grid-template-columns: repeat(${maxCols}, minmax(0, 1fr));">`;
+
+      for (let r = 1; r <= 10; r++) {
+        for (let c = 1; c <= maxCols; c++) {
+          if (maxNumActual === 39) {
+            if (r === 1 && c === 1) {
+              gridHtml += `<div class="ticket-cell empty" style="background: #1e293b; border: 1px solid #334155; display: flex; align-items: center; justify-content: center; font-size: 0.75rem; color: #94a3b8; font-weight: bold;">A.</div>`;
+              continue;
             }
+            let num = null;
+            if (c === 1) num = r - 1; 
+            else if (c === 2) num = 9 + r; 
+            else if (c === 3) num = 19 + r; 
+            else if (c === 4) num = 29 + r; 
 
-            const numbers = inputVal.split(',').map(n => n.trim()).filter(n => n !== '');
-            
-            let html = '';
-            numbers.forEach(num => {
-                html += `<div class="melate-ball" style="width: 36px; height: 36px; font-size: 16px;">${num}</div>`;
-            });
-            
-            resultDiv.innerHTML = html;
-        }
+            const hitsVal = conteo[num];
+            let claseEstado = 'warm';
+            if (hotNums.has(num)) claseEstado = 'hot';
+            else if (coldNums.has(num)) claseEstado = 'cold';
 
-        async function checkUser() {
-            try {
-                const { data: { session }, error } = await supabase.auth.getSession();
-                if (error) throw error;
-                
-                const panel = document.getElementById('header-user-panel');
-                
-                if (session) {
-                    panel.innerHTML = `
-                        <span style="font-size: 14px;">${session.user.email}</span>
-                        <button onclick="signOut()" style="padding: 6px 12px; font-size: 12px; width: auto; background-color: #4b5563;">Cerrar Sesión</button>
-                    `;
-                    loadUserTier(session.user.id);
-                } else {
-                    panel.innerHTML = `
-                        <button onclick="openAuthModal()" style="padding: 8px 16px; font-size: 13px; width: auto; background-color: #2563eb;">Iniciar Sesión</button>
-                    `;
-                }
-            } catch (err) {
-                console.error('Error de sesión:', err.message);
-            }
-        }
+            const esSugerido = sugerenciaActual.includes(num);
+            if (esSugerido) claseEstado += ' suggested';
 
-        async function signUp() {
-            const email = document.getElementById('email').value;
-            const password = document.getElementById('password').value;
-            
-            if (!email || !password) {
-                showMessage('Ingresa correo y contraseña', true);
-                return;
-            }
-
-            showMessage('Registrando...');
-            const { data, error } = await supabase.auth.signUp({ email, password });
-            
-            if (error) {
-                showMessage('Error: ' + error.message, true);
+            gridHtml += `
+              <div class="ticket-cell ${claseEstado}" onclick="toggleNumeroRadar(${num})">
+                <span>${num}</span>
+                <span class="count-badge">${hitsVal > 0 ? hitsVal + 'v' : '0v'}</span>
+              </div>
+            `;
+          } else {
+            const num = (c - 1) * 10 + r;
+            if (num > maxNumActual) {
+              gridHtml += `<div class="ticket-cell empty"></div>`;
             } else {
-                showMessage('¡Registro exitoso! Ya puedes iniciar sesión.');
+              const hitsVal = conteo[num];
+              let claseEstado = 'warm';
+              if (hotNums.has(num)) claseEstado = 'hot';
+              else if (coldNums.has(num)) claseEstado = 'cold';
+
+              const esSugerido = sugerenciaActual.includes(num);
+              if (esSugerido) claseEstado += ' suggested';
+
+              gridHtml += `
+                <div class="ticket-cell ${claseEstado}" onclick="toggleNumeroRadar(${num})">
+                  <span>${num}</span>
+                  <span class="count-badge">${hitsVal > 0 ? hitsVal + 'v' : '0v'}</span>
+                </div>
+              `;
             }
+          }
+        }
+      }
+      gridHtml += `</div>`;
+
+      let controlesSugerenciaHtml = `
+        <div style="margin-top: 8px; background: #0f172a; padding: 6px; border-radius: 6px; border: 1px solid #1e293b; display: flex; flex-direction: column; gap: 4px;">
+          <button class="btn-action" style="background: #4f46e5; font-size: 0.7rem; padding: 6px; margin: 0;" onclick="generarSugerenciaEnRadar()">🔮 Generar Nueva Sugerencia</button>
+      `;
+
+      if (sugerenciaActual.length > 0) {
+        const valHist = verificarUnicidad(sugerenciaActual);
+        controlesSugerenciaHtml += `
+          <div style="font-size: 0.65rem; color: #10b981; font-weight: bold; text-align: center; margin-top: 2px;">
+            ✨ Selección (${sugerenciaActual.length}/6): [ ${sugerenciaActual.join(', ')} ]
+          </div>
+          <div style="font-size: 0.62rem; text-align: center; color: ${valHist.repetido ? '#ef4444' : '#22c55e'};">
+            ${valHist.repetido ? `⚠️ Salió antes en sorteo #${valHist.sorteoEncontrado}` : `✅ ¡Nunca ha salido!`}
+          </div>
+          ${sugerenciaActual.length === 6 ? `<button class="btn-action" style="background: #10b981; font-size: 0.68rem; padding: 6px; margin: 0;" onclick="guardarSugerenciaDirecta('${sugerenciaActual.join(',')}')">💾 Guardar Boleto Actual</button>` : `<div style="font-size: 0.6rem; color: #eab308; text-align: center;">Selecciona ${6 - sugerenciaActual.length} número(s) más para guardar</div>`}
+          <button class="btn-action" style="background: #64748b; font-size: 0.68rem; padding: 6px; margin: 0;" onclick="limpiarSugerenciaRadar()">🧹 Limpiar Selección</button>
+        `;
+      }
+
+      controlesSugerenciaHtml += `
+          <div id="msg-guardar-radar" style="font-size: 0.6rem; text-align: center;"></div>
+        </div>
+      `;
+
+      container.innerHTML = `
+        <div style="width: 100%;">
+          ${gridHtml}
+          ${controlesSugerenciaHtml}
+        </div>
+      `;
+    }
+
+    function toggleNumeroRadar(num) {
+      const index = sugerenciaActual.indexOf(num);
+      if (index > -1) {
+        sugerenciaActual.splice(index, 1);
+      } else {
+        if (sugerenciaActual.length >= 6) {
+          alert('Ya has seleccionado 6 números.');
+          return;
+        }
+        sugerenciaActual.push(num);
+        sugerenciaActual.sort((a, b) => a - b);
+      }
+      actualizarRadarSegunRango();
+    }
+
+    function limpiarSugerenciaRadar() {
+      sugerenciaActual = [];
+      actualizarRadarSegunRango();
+    }
+
+    function generarSugerenciaEnRadar() {
+      const bolsa = new Set();
+      while (bolsa.size < 6) {
+        bolsa.add(Math.floor(Math.random() * maxNumActual) + 1);
+      }
+      sugerenciaActual = Array.from(bolsa).sort((a, b) => a - b);
+      actualizarRadarSegunRango();
+    }
+
+    function actualizarFrecuenciasSegunRango() {
+      const select = document.getElementById('select-freq-rango');
+      const val = select ? select.value : 'todos';
+      let datosMuestra = datosHistoricos;
+
+      if (val !== 'todos') {
+        const limite = parseInt(val);
+        datosMuestra = datosHistoricos.slice(0, limite);
+      }
+      calcularFrecuencias(datosMuestra);
+    }
+
+    function calcularFrecuencias(muestraSorteos) {
+      const conteo = {};
+      for (let i = 1; i <= maxNumActual; i++) conteo[i] = 0;
+      muestraSorteos.forEach(sorteo => {
+        const nums = extraerNumeros(sorteo);
+        nums.forEach(n => { if (conteo[n] !== undefined) conteo[n]++; });
+      });
+
+      const ordenados = Object.keys(conteo).map(Number).sort((a, b) => conteo[b] - conteo[a]);
+      calientesGlobales = ordenados.slice(0, 6);
+      friosGlobales = ordenados.slice(-6);
+      const maxVeces = conteo[ordenados[0]] || 1;
+
+      const htmlFrecuencias = ordenados.map((num) => {
+        const veces = conteo[num];
+        const porcentajeBarra = Math.round((veces / maxVeces) * 100);
+
+        let claseBall = 'ball freq-ball';
+        if (calientesGlobales.includes(num)) {
+          claseBall += ' hot';
+        } else if (friosGlobales.includes(num)) {
+          claseBall += ' cold';
         }
 
-        async function signIn() {
-            const email = document.getElementById('email').value;
-            const password = document.getElementById('password').value;
-            
-            if (!email || !password) {
-                showMessage('Ingresa correo y contraseña', true);
-                return;
-            }
+        return `
+          <div class="freq-row">
+            <div class="${claseBall}">${num}</div>
+            <div class="freq-bar-container"><div class="freq-bar" style="width: ${porcentajeBarra}%;"></div></div>
+            <div class="freq-count">${veces}v</div>
+          </div>
+        `;
+      }).join('');
 
-            showMessage('Iniciando sesión...');
-            const { data, error } = await supabase.auth.signInWithPassword({ email, password });
-            
-            if (error) {
-                showMessage('Error: ' + error.message, true);
-            } else {
-                closeAuthModal();
-                checkUser();
-            }
+      const listaEl = document.getElementById('frecuencias-lista');
+      if (listaEl) listaEl.innerHTML = htmlFrecuencias;
+    }
+
+    function calcularRangos(ultimos20) {
+      if (!ultimos20 || ultimos20.length === 0) return;
+      let sumaTotalAccum = 0;
+      let minSuma = Infinity;
+      let maxSuma = -Infinity;
+
+      ultimos20.forEach(sorteo => {
+        const nums = extraerNumeros(sorteo);
+        const suma = nums.reduce((a, b) => a + b, 0);
+        sumaTotalAccum += suma;
+        if (suma < minSuma) minSuma = suma;
+        if (suma > maxSuma) maxSuma = suma;
+      });
+
+      const promSuma = Math.round(sumaTotalAccum / ultimos20.length);
+
+      const metricsEl = document.getElementById('rangos-metrics');
+      if (metricsEl) {
+        metricsEl.innerHTML = `
+          <div class="metric-row">
+            <span class="metric-label">Suma Mínima:</span>
+            <span class="metric-value" style="color: #38bdf8;">${minSuma} pts</span>
+          </div>
+          <div class="metric-row">
+            <span class="metric-label">Suma Máxima:</span>
+            <span class="metric-value" style="color: #ef4444;">${maxSuma} pts</span>
+          </div>
+          <div class="metric-row">
+            <span class="metric-label">Promedio Suma Total:</span>
+            <span class="metric-value status-ok">${promSuma} pts</span>
+          </div>
+        `;
+      }
+    }
+
+    function verificarUnicidad(numsArr) {
+      const sortedTarget = [...numsArr].map(Number).sort((a, b) => a - b);
+      for (let sorteo of datosHistoricos) {
+        const sNums = [...extraerNumeros(sorteo)].map(Number).sort((a, b) => a - b);
+        if (sNums.length === sortedTarget.length && sNums.every((val, idx) => val === sortedTarget[idx])) {
+          return { repetido: true, sorteoEncontrado: sorteo.sorteo || sorteo.numero_sorteo || sorteo.id };
+        }
+      }
+      return { repetido: false };
+    }
+
+    function analizarCoincidenciasParcialesConHistorial(numsBoleto, historial) {
+      const setBoleto = new Set(numsBoleto.map(Number));
+      let aciertos6 = 0;
+      let aciertos5 = 0;
+      let aciertos4 = 0;
+      let sorteos6 = [];
+      let detalles5 = [];
+      let detalles4 = [];
+
+      historial.forEach(sorteo => {
+        const sNums = extraerNumeros(sorteo).map(Number);
+        const numerosAcertados = sNums.filter(n => setBoleto.has(n));
+        const matches = numerosAcertados.length;
+
+        const numSorteo = sorteo.sorteo || sorteo.numero_sorteo || sorteo.id;
+        if (matches === 6) {
+          aciertos6++;
+          sorteos6.push(numSorteo);
+        } else if (matches === 5) {
+          aciertos5++;
+          detalles5.push({ sorteo: numSorteo, numeros: numerosAcertados.sort((a,b) => a - b) });
+        } else if (matches === 4) {
+          aciertos4++;
+          detalles4.push({ sorteo: numSorteo, numeros: numerosAcertados.sort((a,b) => a - b) });
+        }
+      });
+
+      return { aciertos6, aciertos5, aciertos4, sorteos6, detalles5, detalles4 };
+    }
+
+    function generarSugerencia() {
+      if (usuarioPlan === 'free' && juegoActual !== 'historico_melate') {
+        alert('🔒 Las sugerencias para este sorteo requieren el Plan Oro.');
+        return;
+      }
+      const bolsa = new Set();
+      while (bolsa.size < 6) {
+        bolsa.add(Math.floor(Math.random() * maxNumActual) + 1);
+      }
+      const propuesta = Array.from(bolsa).sort((a, b) => a - b);
+      sugerenciaActual = propuesta; 
+
+      const suma = propuesta.reduce((a, b) => a + b, 0);
+      const minSuma = maxNumActual === 39 ? 80 : 120;
+      const maxSuma = maxNumActual === 39 ? 160 : 220;
+      const sumaOk = suma >= minSuma && suma <= maxSuma;
+      const valHist = verificarUnicidad(propuesta);
+
+      let calientesCount = 0;
+      let friosCount = 0;
+      let tibiosCount = 0;
+      let paresCount = 0;
+      let imparesCount = 0;
+
+      propuesta.forEach(n => {
+        if (calientesGlobales.includes(n)) calientesCount++;
+        else if (friosGlobales.includes(n)) friosCount++;
+        else tibiosCount++;
+
+        if (n % 2 === 0) paresCount++;
+        else imparesCount++;
+      });
+
+      const esferasHtml = propuesta.map(n => {
+        let clase = '';
+        if (calientesGlobales.includes(n)) clase = ' hot';
+        else if (friosGlobales.includes(n)) clase = ' cold';
+        return `<div class="ball${clase}">${n}</div>`;
+      }).join('');
+
+      let partesTemp = [];
+      if (calientesCount > 0) partesTemp.push(`${calientesCount} ${calientesCount === 1 ? 'número caliente' : 'números calientes'}`);
+      if (tibiosCount > 0) partesTemp.push(`${tibiosCount} ${tibiosCount === 1 ? 'número tibio' : 'números tibios'}`);
+      if (friosCount > 0) partesTemp.push(`${friosCount} ${friosCount === 1 ? 'número frío' : 'números fríos'}`);
+
+      let textoDescriptivo = `Esta combinación para <strong>${NOMBRES_JUEGOS[juegoActual]}</strong> incluye ${partesTemp.join(', ')}, ${paresCount} pares y ${imparesCount} impares, con una suma total de <strong>${suma} pts</strong> (${sumaOk ? 'en rango aceptable' : 'fuera de rango'}).`;
+
+      document.getElementById('sugerencia-result').innerHTML = `
+        <div class="balls-container" style="margin-bottom: 6px;">${esferasHtml}</div>
+        <div style="background: #0f172a; padding: 6px; border-radius: 5px; border: 1px solid #1e293b; margin-bottom: 6px; font-size: 0.68rem; line-height: 1.3; color: #cbd5e1; text-align: left;">
+          💡 ${textoDescriptivo}
+        </div>
+        <div style="background: #0f172a; padding: 5px; border-radius: 5px; border: 1px solid #1e293b; margin-bottom: 5px; font-size: 0.7rem;">
+          <div class="metric-row" style="border:none; padding:0;">
+            <span class="metric-label">Suma Total:</span>
+            <span class="metric-value ${sumaOk ? 'status-ok' : 'status-out'}">${suma} pts (${sumaOk ? 'En Rango' : 'Fuera'})</span>
+          </div>
+          <div class="metric-row" style="border:none; padding:2px 0 0 0;">
+            <span class="metric-label">Validación Histórica:</span>
+            <span class="metric-value" style="color: ${valHist.repetido ? '#ef4444' : '#22c55e'};">
+              ${valHist.repetido ? `Salió en sorteo #${valHist.sorteoEncontrado}` : `✅ ¡Nunca ha salido!`}
+            </span>
+          </div>
+        </div>
+        <button class="btn-action" style="background: #0284c7; margin-bottom: 4px;" onclick="verSugerenciaEnRadar([${propuesta.join(',')}])">🎯 Ver en Radar</button>
+        <button class="btn-action" style="background: #10b981;" onclick="guardarSugerenciaDirecta('${propuesta.join(',')}')">💾 Guardar Boleto</button>
+        <div id="msg-guardar-sugerencia" style="margin-top: 4px; font-size: 0.65rem; text-align: center;"></div>
+      `;
+    }
+
+    async function guardarSugerenciaDirecta(numsStr) {
+      const numerosArr = numsStr.split(',').map(Number);
+      const alias = prompt('Nombre o alias para este boleto:', `Boleto ${NOMBRES_JUEGOS[juegoActual]}`);
+      if (alias === null) return;
+
+      const { error } = await db.from('mis_jugadas').insert([
+        { juego: juegoActual, numeros: numerosArr, alias: alias || 'Mi Boleto' }
+      ]);
+
+      const msgEl = document.getElementById('msg-guardar-sugerencia') || document.getElementById('msg-guardar-radar');
+      if (msgEl) {
+        msgEl.innerHTML = error ? `<span style="color:#ef4444;">Error: ${error.message}</span>` : `<span style="color:#22c55e;">¡Guardado con éxito! 🎟️</span>`;
+      }
+      if (document.getElementById('tab-jugadas').classList.contains('active')) {
+        cargarMisJugadas();
+      }
+    }
+
+    async function guardarJugada() {
+      const alias = document.getElementById('jugada-alias').value;
+      const rawNums = document.getElementById('jugada-numeros').value;
+      const numerosArr = rawNums.split(',').map(n => parseInt(n.trim())).filter(n => !isNaN(n));
+
+      if (numerosArr.length !== 6) {
+        alert('Ingresa exactamente 6 números separados por comas.');
+        return;
+      }
+
+      const { error } = await db.from('mis_jugadas').insert([
+        { juego: juegoActual, numeros: numerosArr, alias: alias || 'Mi Boleto' }
+      ]);
+
+      if (error) alert('Error: ' + error.message);
+      else {
+        document.getElementById('jugada-alias').value = '';
+        document.getElementById('jugada-numeros').value = '';
+        cargarMisJugadas();
+      }
+    }
+
+    async function eliminarJugada(id) {
+      if (!confirm('¿Deseas eliminar este boleto?')) return;
+      const { error } = await db.from('mis_jugadas').delete().eq('id', id);
+      if (error) {
+        alert('Error al eliminar de Supabase: ' + error.message);
+      } else {
+        cargarMisJugadas();
+      }
+    }
+
+    async function cargarMisJugadas() {
+      const container = document.getElementById('mis-jugadas-lista');
+      container.innerHTML = '<div class="loader">Cargando...</div>';
+
+      const { data, error } = await db
+        .from('mis_jugadas')
+        .select('*')
+        .order('fecha_registro', { ascending: false });
+
+      if (error || !data || data.length === 0) {
+        container.innerHTML = `<div style="color:#8c9ba5; font-size:0.68rem; padding:6px 0; text-align:center;">No hay jugadas guardadas.</div>`;
+        return;
+      }
+
+      let htmlAcumulado = '';
+      for (let j of data) {
+        const historialJuego = await obtenerHistorialJuego(j.juego);
+        const analisis = analizarCoincidenciasParcialesConHistorial(j.numeros, historialJuego);
+        const nombreJuegoTag = NOMBRES_JUEGOS[j.juego] || 'Melate';
+        
+        let estadoExactoHtml = analisis.aciertos6 > 0 
+          ? `<span style="color:#ef4444;">Salió en #${analisis.sorteos6.join(', #')}</span>` 
+          : `<span style="color:#22c55e;">✅ Nunca ha salido (6/6)</span>`;
+
+        let detallesAciertosHtml = '';
+        if (analisis.aciertos5 > 0 || analisis.aciertos4 > 0) {
+          detallesAciertosHtml += `<div style="margin-top: 4px; display: flex; flex-direction: column; gap: 2px;">`;
+          
+          analisis.detalles5.forEach(d => {
+            detallesAciertosHtml += `
+              <div style="font-size: 0.55rem; color: #38bdf8; background: #0b111e; padding: 2px 4px; border-radius: 3px; border: 1px solid #1e293b;">
+                ✦ <b>5 aciertos</b> (Sorteo #${d.sorteo}): <span style="color:#fff;">[ ${d.numeros.join(', ')} ]</span>
+              </div>
+            `;
+          });
+
+          analisis.detalles4.forEach(d => {
+            detallesAciertosHtml += `
+              <div style="font-size: 0.55rem; color: #eab308; background: #0b111e; padding: 2px 4px; border-radius: 3px; border: 1px solid #1e293b;">
+                ✦ <b>4 aciertos</b> (Sorteo #${d.sorteo}): <span style="color:#fff;">[ ${d.numeros.join(', ')} ]</span>
+              </div>
+            `;
+          });
+
+          detallesAciertosHtml += `</div>`;
         }
 
-        async function signOut() {
-            await supabase.auth.signOut();
-            document.getElementById('current-plan-badge').innerText = 'PLAN: FREE';
-            checkUser();
-        }
+        htmlAcumulado += `
+          <div style="background:#0f172a; padding:6px; border-radius:5px; margin-bottom:5px; border: 1px solid #1e293b; position:relative;">
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:2px;">
+              <div style="display:flex; align-items:center; gap:4px; overflow:hidden;">
+                <strong style="font-size:0.68rem; color:#38bdf8; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">${j.alias}</strong>
+                <span style="font-size:0.52rem; background:#1e293b; color:#eab308; padding:1px 4px; border-radius:3px; border:1px solid #334155; white-space:nowrap;">${nombreJuegoTag}</span>
+              </div>
+              <div style="display:flex; align-items:center; gap:6px;">
+                <div style="font-size:0.58rem; white-space:nowrap;">
+                  ${estadoExactoHtml}
+                </div>
+                <button onclick="eliminarJugada('${j.id}')" style="background:transparent; border:none; cursor:pointer; font-size:0.85rem; padding:0 2px;" title="Eliminar boleto">🗑️</button>
+              </div>
+            </div>
+            <div class="balls-container" style="justify-content:flex-start; gap:2px; margin-bottom: 4px;">
+              ${j.numeros.map(n => `<div class="ball" style="width:20px; height:20px; font-size:0.55rem;">${n}</div>`).join('')}
+            </div>
+            <div style="display:flex; justify-content:space-between; align-items:center; font-size:0.58rem; background:#161f30; padding:3px 5px; border-radius:4px; border:1px solid #1e293b; color:#94a3b8; margin-bottom: 4px;">
+              <span>🎯 Parciales históricos:</span>
+              <span style="color:#38bdf8;"><strong>5 aciertos:</strong> ${analisis.aciertos5}v</span>
+              <span style="color:#eab308;"><strong>4 aciertos:</strong> ${analisis.aciertos4}v</span>
+            </div>
+            ${detallesAciertosHtml}
+            <button class="btn-action" style="background: #0284c7; font-size: 0.65rem; padding: 5px; margin-top: 4px;" onclick="verBoletoEnRadar('${j.juego}', [${j.numeros.join(',')}])">🎯 Ver en Radar</button>
+          </div>
+        `;
+      }
+      container.innerHTML = htmlAcumulado;
+    }
 
-        async function loadUserTier(userId) {
-            try {
-                const { data, error } = await supabase
-                    .from('profiles')
-                    .select('tier')
-                    .eq('id', userId)
-                    .single();
-                    
-                if (data && data.tier) {
-                    document.getElementById('current-plan-badge').innerText = 'PLAN: ' + data.tier.toUpperCase();
-                } else {
-                    document.getElementById('current-plan-badge').innerText = 'PLAN: FREE';
-                }
-            } catch (err) {
-                document.getElementById('current-plan-badge').innerText = 'PLAN: FREE';
-            }
-        }
+    function extraerNumeros(sorteo) {
+      if (!sorteo) return [];
+      if (sorteo.r1 !== undefined) return [sorteo.r1, sorteo.r2, sorteo.r3, sorteo.r4, sorteo.r5, sorteo.r6].map(Number);
+      if (sorteo.n1 !== undefined) return [sorteo.n1, sorteo.n2, sorteo.n3, sorteo.n4, sorteo.n5, sorteo.n6].map(Number);
+      if (sorteo.rev1 !== undefined) return [sorteo.rev1, sorteo.rev2, sorteo.rev3, sorteo.rev4, sorteo.rev5, sorteo.rev6].map(Number);
+      if (Array.isArray(sorteo.numeros)) return sorteo.numeros.map(Number);
+      return [];
+    }
 
-        window.onload = checkUser;
-    </script>
+    document.addEventListener('DOMContentLoaded', async () => {
+      verificarEstadoPrueba();
+      aplicarRestriccionesPlan();
+      await cargarDatosCompletos();
+      setTimeout(mostrarPistaZoomMovil, 1200);
+    });
+  </script>
 </body>
 </html>
