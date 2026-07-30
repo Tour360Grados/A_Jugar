@@ -15,6 +15,9 @@
             color: #f8fafc;
             margin: 0;
             padding: 0;
+            display: flex;
+            flex-direction: column;
+            min-height: 100vh;
         }
         header {
             background-color: #1e293b;
@@ -81,6 +84,9 @@
             max-width: 950px;
             margin: 20px auto;
             padding: 0 15px;
+            flex: 1;
+            width: 100%;
+            box-sizing: border-box;
         }
         .status-bar {
             text-align: center;
@@ -93,7 +99,7 @@
             font-weight: bold;
         }
         
-        /* Pestañas principales y secundarias idénticas a tu diseño original */
+        /* Pestañas principales */
         .nav-tabs {
             display: flex;
             justify-content: center;
@@ -117,27 +123,33 @@
             color: white;
             border-color: #3b82f6;
         }
+
+        /* Pestañas secundarias en cuadrícula uniforme para evitar desorden en móviles */
         .sub-tabs {
-            display: flex;
-            justify-content: center;
-            gap: 6px;
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(110px, 1fr));
+            gap: 8px;
             margin-bottom: 25px;
-            flex-wrap: wrap;
         }
         .sub-tab-btn {
             background: #1e293b;
             color: #cbd5e1;
             border: 1px solid #334155;
-            padding: 6px 12px;
-            border-radius: 4px;
+            padding: 8px 10px;
+            border-radius: 6px;
             cursor: pointer;
             font-size: 12px;
+            text-align: center;
+            font-weight: bold;
             transition: all 0.2s;
         }
         .sub-tab-btn.active {
             background: #0f172a;
             border-color: #475569;
             color: #38bdf8;
+        }
+        .sub-tab-btn:hover {
+            border-color: #38bdf8;
         }
         
         .card-section {
@@ -165,6 +177,8 @@
             border-radius: 6px;
             margin-bottom: 10px;
             border: 1px solid #334155;
+            flex-wrap: wrap;
+            gap: 10px;
         }
         .draw-info span {
             color: #38bdf8;
@@ -201,6 +215,45 @@
             justify-content: center;
             font-size: 12px;
             font-weight: bold;
+        }
+
+        /* Panel de Pruebas Rápido */
+        .test-panel {
+            background: #0f172a;
+            border: 1px dashed #38bdf8;
+            padding: 10px;
+            border-radius: 6px;
+            margin-bottom: 20px;
+            text-align: center;
+            font-size: 13px;
+        }
+        .test-btn {
+            background: #334155;
+            color: white;
+            border: none;
+            padding: 5px 10px;
+            border-radius: 4px;
+            cursor: pointer;
+            margin: 0 4px;
+            font-size: 12px;
+            font-weight: bold;
+        }
+        .test-btn:hover { background: #475569; }
+
+        /* Footer con Logo TOUR360° */
+        footer {
+            text-align: center;
+            padding: 20px;
+            background: #1e293b;
+            color: #94a3b8;
+            font-weight: bold;
+            font-size: 16px;
+            letter-spacing: 1px;
+            border-top: 1px solid #334155;
+            margin-top: 40px;
+        }
+        footer span {
+            color: #38bdf8;
         }
 
         /* Modal de Login */
@@ -271,7 +324,7 @@
             </div>
         </div>
         <div class="user-panel" id="header-user-panel">
-            <button onclick="openAuthModal()" class="tab-btn" style="background: #3b82f6; color: white; border: none;">Iniciar Sesión</button>
+            <button onclick="openAuthModal()" class="tab-btn" style="background: #3b82f6; color: white; border: none;">Iniciar Sesión (Oro - Premium)</button>
         </div>
     </header>
 
@@ -282,6 +335,14 @@
             <span onclick="openAuthModal()" style="color: #38bdf8; cursor: pointer; text-decoration: underline; margin-left: 5px;">(Cambiar)</span>
         </div>
 
+        <!-- Panel de Pruebas (Habilitado para cambiar planes al instante) -->
+        <div class="test-panel">
+            🔧 <strong>Modo Pruebas (Cambio rápido de nivel):</strong> 
+            <button class="test-btn" onclick="setTestTier('free')">Free</button>
+            <button class="test-btn" onclick="setTestTier('oro')">Oro</button>
+            <button class="test-btn" onclick="setTestTier('premium')">Premium</button>
+        </div>
+
         <!-- Pestañas Principales (Sorteos) -->
         <div class="nav-tabs">
             <button class="tab-btn active">Melate</button>
@@ -290,7 +351,7 @@
             <button class="tab-btn">Retro 🔒</button>
         </div>
 
-        <!-- Pestañas Secundarias (Herramientas) -->
+        <!-- Pestañas Secundarias (Herramientas en Cuadrícula Uniforme) -->
         <div class="sub-tabs">
             <button class="sub-tab-btn active">📊 Últimos</button>
             <button class="sub-tab-btn">📈 Frec. 🔒</button>
@@ -301,62 +362,41 @@
             <button class="sub-tab-btn" onclick="openAuthModal()">⭐ Planes</button>
         </div>
 
-        <!-- Contenido: Historial de Sorteos -->
+        <!-- Contenido: Historial de Sorteos (10 Sorteos completos en Plan Free) -->
         <div class="card-section">
             <div class="section-title">
                 Historial de Sorteos (Melate)
                 <span style="font-size: 12px; color: #94a3b8;">Últimos 10 (Plan Free)</span>
             </div>
 
-            <div class="draw-row">
-                <div class="draw-info">
-                    Sorteo <span>#4244</span>
-                    <div class="draw-date">26/07/2026</div>
-                </div>
-                <div class="draw-balls">
-                    <div class="normal-ball">5</div>
-                    <div class="normal-ball">11</div>
-                    <div class="normal-ball">33</div>
-                    <div class="normal-ball">37</div>
-                    <div class="normal-ball">45</div>
-                    <div class="normal-ball">54</div>
-                    <div class="extra-ball">13</div>
-                </div>
-            </div>
+            <!-- Sorteo 4244 -->
+            <div class="draw-row"><div class="draw-info">Sorteo <span>#4244</span><div class="draw-date">26/07/2026</div></div><div class="draw-balls"><div class="normal-ball">5</div><div class="normal-ball">11</div><div class="normal-ball">33</div><div class="normal-ball">37</div><div class="normal-ball">45</div><div class="normal-ball">54</div><div class="extra-ball">13</div></div></div>
+            <!-- Sorteo 4243 -->
+            <div class="draw-row"><div class="draw-info">Sorteo <span>#4243</span><div class="draw-date">24/07/2026</div></div><div class="draw-balls"><div class="normal-ball">26</div><div class="normal-ball">33</div><div class="normal-ball">38</div><div class="normal-ball">45</div><div class="normal-ball">47</div><div class="normal-ball">56</div><div class="extra-ball">46</div></div></div>
+            <!-- Sorteo 4242 -->
+            <div class="draw-row"><div class="draw-info">Sorteo <span>#4242</span><div class="draw-date">22/07/2026</div></div><div class="draw-balls"><div class="normal-ball">1</div><div class="normal-ball">3</div><div class="normal-ball">7</div><div class="normal-ball">8</div><div class="normal-ball">37</div><div class="normal-ball">50</div><div class="extra-ball">6</div></div></div>
+            <!-- Sorteo 4241 -->
+            <div class="draw-row"><div class="draw-info">Sorteo <span>#4241</span><div class="draw-date">19/07/2026</div></div><div class="draw-balls"><div class="normal-ball">9</div><div class="normal-ball">16</div><div class="normal-ball">35</div><div class="normal-ball">45</div><div class="normal-ball">50</div><div class="normal-ball">51</div><div class="extra-ball">34</div></div></div>
+            <!-- Sorteo 4240 -->
+            <div class="draw-row"><div class="draw-info">Sorteo <span>#4240</span><div class="draw-date">17/07/2026</div></div><div class="draw-balls"><div class="normal-ball">2</div><div class="normal-ball">23</div><div class="normal-ball">39</div><div class="normal-ball">41</div><div class="normal-ball">49</div><div class="normal-ball">55</div><div class="extra-ball">14</div></div></div>
+            <!-- Sorteo 4239 -->
+            <div class="draw-row"><div class="draw-info">Sorteo <span>#4239</span><div class="draw-date">15/07/2026</div></div><div class="draw-balls"><div class="normal-ball">14</div><div class="normal-ball">23</div><div class="normal-ball">31</div><div class="normal-ball">50</div><div class="normal-ball">51</div><div class="normal-ball">52</div><div class="extra-ball">33</div></div></div>
+            <!-- Sorteo 4238 -->
+            <div class="draw-row"><div class="draw-info">Sorteo <span>#4238</span><div class="draw-date">12/07/2026</div></div><div class="draw-balls"><div class="normal-ball">4</div><div class="normal-ball">12</div><div class="normal-ball">19</div><div class="normal-ball">28</div><div class="normal-ball">44</div><div class="normal-ball">53</div><div class="extra-ball">21</div></div></div>
+            <!-- Sorteo 4237 -->
+            <div class="draw-row"><div class="draw-info">Sorteo <span>#4237</span><div class="draw-date">10/07/2026</div></div><div class="draw-balls"><div class="normal-ball">8</div><div class="normal-ball">15</div><div class="normal-ball">22</div><div class="normal-ball">30</div><div class="normal-ball">41</div><div class="normal-ball">48</div><div class="extra-ball">9</div></div></div>
+            <!-- Sorteo 4236 -->
+            <div class="draw-row"><div class="draw-info">Sorteo <span>#4236</span><div class="draw-date">08/07/2026</div></div><div class="draw-balls"><div class="normal-ball">6</div><div class="normal-ball">13</div><div class="normal-ball">24</div><div class="normal-ball">32</div><div class="normal-ball">42</div><div class="normal-ball">56</div><div class="extra-ball">18</div></div></div>
+            <!-- Sorteo 4235 -->
+            <div class="draw-row"><div class="draw-info">Sorteo <span>#4235</span><div class="draw-date">05/07/2026</div></div><div class="draw-balls"><div class="normal-ball">3</div><div class="normal-ball">10</div><div class="normal-ball">17</div><div class="normal-ball">29</div><div class="normal-ball">38</div><div class="normal-ball">49</div><div class="extra-ball">25</div></div></div>
 
-            <div class="draw-row">
-                <div class="draw-info">
-                    Sorteo <span>#4243</span>
-                    <div class="draw-date">24/07/2026</div>
-                </div>
-                <div class="draw-balls">
-                    <div class="normal-ball">26</div>
-                    <div class="normal-ball">33</div>
-                    <div class="normal-ball">38</div>
-                    <div class="normal-ball">45</div>
-                    <div class="normal-ball">47</div>
-                    <div class="normal-ball">56</div>
-                    <div class="extra-ball">46</div>
-                </div>
-            </div>
-
-            <div class="draw-row">
-                <div class="draw-info">
-                    Sorteo <span>#4242</span>
-                    <div class="draw-date">22/07/2026</div>
-                </div>
-                <div class="draw-balls">
-                    <div class="normal-ball">1</div>
-                    <div class="normal-ball">3</div>
-                    <div class="normal-ball">7</div>
-                    <div class="normal-ball">8</div>
-                    <div class="normal-ball">37</div>
-                    <div class="normal-ball">50</div>
-                    <div class="extra-ball">6</div>
-                </div>
-            </div>
         </div>
     </div>
+
+    <!-- Footer con Logo TOUR360° -->
+    <footer>
+        TOUR<span>360°</span> - Plataforma de Análisis Estadístico
+    </footer>
 
     <!-- Modal de Autenticación -->
     <div id="auth-modal" class="modal">
@@ -394,6 +434,11 @@
             statusDiv.innerText = msg;
         }
 
+        // Función de prueba para cambiar de nivel al instante
+        function setTestTier(tierName) {
+            document.getElementById('current-plan-badge').innerText = tierName.toUpperCase();
+        }
+
         async function checkUser() {
             try {
                 const { data: { session }, error } = await supabase.auth.getSession();
@@ -408,7 +453,7 @@
                     `;
                     loadUserTier(session.user.id);
                 } else {
-                    panel.innerHTML = `<button onclick="openAuthModal()" class="tab-btn" style="background: #3b82f6; color: white; border: none;">Iniciar Sesión</button>`;
+                    panel.innerHTML = `<button onclick="openAuthModal()" class="tab-btn" style="background: #3b82f6; color: white; border: none;">Iniciar Sesión (Oro - Premium)</button>`;
                 }
             } catch (err) {
                 console.error('Error de sesión:', err.message);
