@@ -30,6 +30,7 @@
             display: flex;
             align-items: center;
             gap: 15px;
+            cursor: pointer;
         }
         header h1 {
             margin: 0;
@@ -121,9 +122,9 @@
         .badge {
             background-color: #dbeafe;
             color: #1d4ed8;
-            padding: 4px 8px;
+            padding: 6px 12px;
             border-radius: 4px;
-            font-size: 12px;
+            font-size: 13px;
             font-weight: bold;
         }
         /* Modal de Login */
@@ -161,17 +162,13 @@
             font-size: 13px;
             font-weight: bold;
         }
-        /* Control de vistas */
-        #app-view {
-            display: none;
-        }
     </style>
 </head>
 <body>
 
     <!-- Barra Superior -->
     <header>
-        <div class="logo-container">
+        <div class="logo-container" onclick="location.reload()">
             <h1>¡A Jugar!</h1>
             <div class="balls-group">
                 <span class="melate-ball">1</span>
@@ -183,48 +180,41 @@
             </div>
         </div>
         <div class="user-panel" id="header-user-panel">
-            <!-- Dinámico -->
+            <!-- Se carga dinámicamente -->
         </div>
     </header>
 
-    <!-- VISTA 1: Landing / Bienvenida Comercial -->
-    <div class="main-container" id="landing-view">
+    <!-- Aplicación Principal (Directo al Panel) -->
+    <div class="main-container">
         <div class="card">
-            <h2>Domina las estadísticas y maximiza tus jugadas</h2>
-            <p>Descubre el poder del análisis de datos, matrices de frecuencia y algoritmos inteligentes para evaluar cada sorteo con precisión.</p>
-            <hr style="border: 0; border-top: 1px solid #eee; margin: 20px 0;">
-            <div style="background: #f8fafc; padding: 20px; border-radius: 6px; border-left: 4px solid #2563eb;">
-                <h3>📊 Acceso a la Plataforma</h3>
-                <p>Explora las herramientas base de forma gratuita o suscríbete a un nivel superior para desbloquear funciones de predicción avanzada.</p>
-                
-                <button onclick="enterApp('FREE')" class="secondary-btn" style="margin-bottom: 12px;">Continuar con Plan Free (Acceso Libre)</button>
-                <button onclick="openAuthModal()">Iniciar Sesión / Registrarse para Plan Oro o Premium</button>
-            </div>
-        </div>
-    </div>
-
-    <!-- VISTA 2: Aplicación Principal / Panel de Herramientas -->
-    <div class="main-container" id="app-view">
-        <div class="card">
-            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
-                <h2 style="margin: 0;">Panel de Control</h2>
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; flex-wrap: wrap; gap: 10px;">
+                <h2 style="margin: 0;">Panel de Control Estadístico</h2>
                 <span class="badge" id="current-plan-badge">PLAN: FREE</span>
             </div>
-            <p>Bienvenido a tu entorno de trabajo estadístico. Aquí tienes acceso a los módulos habilitados para tu cuenta.</p>
+            <p>Estás explorando las herramientas base de la plataforma. Analiza tus frecuencias y sorteos con total libertad.</p>
             <hr style="border: 0; border-top: 1px solid #eee; margin: 20px 0;">
-            <div style="background: #f0fdf4; padding: 20px; border-radius: 6px; border: 1px solid #bbf7d0;">
+            
+            <!-- Módulos Activos / Contenido de la App -->
+            <div style="background: #f0fdf4; padding: 20px; border-radius: 6px; border: 1px solid #bbf7d0; margin-bottom: 20px;">
                 <h3 style="color: #166534; margin-top: 0;">🎲 Módulos de Sorteos Activos</h3>
-                <p style="color: #15803d;">Selecciona una herramienta para comenzar a procesar tus combinaciones y frecuencias.</p>
-                <button onclick="goBackToLanding()" style="width: auto; margin-top: 10px; background-color: #64748b;">Regresar a Inicio</button>
+                <p style="color: #15803d; margin-bottom: 0;">Selecciona una herramienta o matriz para procesar tus combinaciones.</p>
+            </div>
+
+            <!-- Tarjeta de Elección de Planes (Oro / Premium) -->
+            <div style="background: #eff6ff; padding: 20px; border-radius: 6px; border: 1px solid #bfdbfe;">
+                <h3 style="color: #1e40af; margin-top: 0;">⭐ Desbloquea Funciones Avanzadas</h3>
+                <p style="color: #1e3a8a; margin-bottom: 15px;">¿Deseas acceder a algoritmos de predicción inteligente y análisis profundo? Elige tu nivel de membresía.</p>
+                <button onclick="openAuthModal()" class="secondary-btn" style="max-width: 300px;">Elegir Plan Oro o Premium</button>
             </div>
         </div>
     </div>
 
-    <!-- Modal de Autenticación -->
+    <!-- Modal de Autenticación / Selección de Plan -->
     <div id="auth-modal" class="modal">
         <div class="modal-content">
             <span class="close-btn" onclick="closeAuthModal()">&times;</span>
-            <h2>Acceso a la Cuenta</h2>
+            <h2>Acceso a tu Cuenta</h2>
+            <p style="font-size: 13px; color: #666;">Inicia sesión para activar tu membresía Oro o Premium.</p>
             <input type="email" id="email" placeholder="Correo electrónico">
             <input type="password" id="password" placeholder="Contraseña">
             <button onclick="signIn()" style="margin-top: 5px;">Iniciar Sesión</button>
@@ -255,19 +245,6 @@
             document.getElementById('status-msg').innerText = '';
         }
 
-        function enterApp(tierName) {
-            document.getElementById('landing-view').style.display = 'none';
-            document.getElementById('app-view').style.display = 'block';
-            document.getElementById('current-plan-badge').innerText = 'PLAN: ' + tierName;
-            window.scrollTo({ top: 0, behavior: 'smooth' });
-        }
-
-        function goBackToLanding() {
-            document.getElementById('app-view').style.display = 'none';
-            document.getElementById('landing-view').style.display = 'block';
-            window.scrollTo({ top: 0, behavior: 'smooth' });
-        }
-
         async function checkUser() {
             try {
                 const { data: { session }, error } = await supabase.auth.getSession();
@@ -278,11 +255,13 @@
                 if (session) {
                     panel.innerHTML = `
                         <span style="font-size: 14px;">${session.user.email}</span>
-                        <button onclick="signOut()" style="padding: 5px 10px; font-size: 12px; width: auto; background-color: #4b5563;">Cerrar Sesión</button>
+                        <button onclick="signOut()" style="padding: 6px 12px; font-size: 12px; width: auto; background-color: #4b5563;">Cerrar Sesión</button>
                     `;
                     loadUserTier(session.user.id);
                 } else {
-                    panel.innerHTML = '';
+                    panel.innerHTML = `
+                        <button onclick="openAuthModal()" style="padding: 8px 16px; font-size: 13px; width: auto; background-color: #2563eb;">Iniciar Sesión</button>
+                    `;
                 }
             } catch (err) {
                 console.error('Error de sesión:', err.message);
@@ -325,13 +304,12 @@
             } else {
                 closeAuthModal();
                 checkUser();
-                enterApp('ORO / PREMIUM');
             }
         }
 
         async function signOut() {
             await supabase.auth.signOut();
-            goBackToLanding();
+            document.getElementById('current-plan-badge').innerText = 'PLAN: FREE';
             checkUser();
         }
 
