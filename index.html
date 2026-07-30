@@ -80,12 +80,12 @@
         }
         .main-container {
             max-width: 900px;
-            margin: 40px auto;
+            margin: 30px auto;
             padding: 20px;
         }
         .card {
             background: white;
-            padding: 30px;
+            padding: 25px 30px;
             border-radius: 8px;
             box-shadow: 0 4px 10px rgba(0, 0, 0, 0.05);
             margin-bottom: 20px;
@@ -162,6 +162,19 @@
             font-size: 13px;
             font-weight: bold;
         }
+        .tool-box {
+            background: #f8fafc;
+            border: 1px solid #e2e8f0;
+            padding: 20px;
+            border-radius: 6px;
+            margin-top: 15px;
+        }
+        .result-balls {
+            display: flex;
+            gap: 10px;
+            justify-content: center;
+            margin-top: 15px;
+        }
     </style>
 </head>
 <body>
@@ -184,32 +197,35 @@
         </div>
     </header>
 
-    <!-- Aplicación Principal (Directo al Panel) -->
+    <!-- Aplicación Principal (Directo al Panel Libre) -->
     <div class="main-container">
         <div class="card">
             <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; flex-wrap: wrap; gap: 10px;">
                 <h2 style="margin: 0;">Panel de Control Estadístico</h2>
                 <span class="badge" id="current-plan-badge">PLAN: FREE</span>
             </div>
-            <p>Estás explorando las herramientas base de la plataforma. Analiza tus frecuencias y sorteos con total libertad.</p>
+            <p>Herramientas de libre acceso para procesamiento de frecuencias y combinaciones de sorteos.</p>
             <hr style="border: 0; border-top: 1px solid #eee; margin: 20px 0;">
             
-            <!-- Módulos Activos / Contenido de la App -->
-            <div style="background: #f0fdf4; padding: 20px; border-radius: 6px; border: 1px solid #bbf7d0; margin-bottom: 20px;">
-                <h3 style="color: #166534; margin-top: 0;">🎲 Módulos de Sorteos Activos</h3>
-                <p style="color: #15803d; margin-bottom: 0;">Selecciona una herramienta o matriz para procesar tus combinaciones.</p>
+            <!-- Herramienta Interactiva del Plan Free -->
+            <div class="tool-box">
+                <h3 style="color: #1e293b; margin-top: 0;">🎲 Generador y Validador Base (Plan Free)</h3>
+                <p style="font-size: 14px; color: #475569;">Verifica tus combinaciones de 6 números para el sorteo:</p>
+                <input type="text" id="user-combination" placeholder="Ej. 5, 12, 23, 34, 45, 52">
+                <button onclick="evaluateCombination()" class="secondary-btn">Analizar Combinación</button>
+                <div id="evaluation-result" class="result-balls"></div>
             </div>
 
-            <!-- Tarjeta de Elección de Planes (Oro / Premium) -->
-            <div style="background: #eff6ff; padding: 20px; border-radius: 6px; border: 1px solid #bfdbfe;">
+            <!-- Sección de Ascenso a Planes Superiores -->
+            <div style="background: #eff6ff; padding: 20px; border-radius: 6px; border: 1px solid #bfdbfe; margin-top: 20px;">
                 <h3 style="color: #1e40af; margin-top: 0;">⭐ Desbloquea Funciones Avanzadas</h3>
-                <p style="color: #1e3a8a; margin-bottom: 15px;">¿Deseas acceder a algoritmos de predicción inteligente y análisis profundo? Elige tu nivel de membresía.</p>
-                <button onclick="openAuthModal()" class="secondary-btn" style="max-width: 300px;">Elegir Plan Oro o Premium</button>
+                <p style="color: #1e3a8a; margin-bottom: 15px;">Accede a matrices de frecuencia históricas completas y algoritmos de predicción con tu cuenta Oro o Premium.</p>
+                <button onclick="openAuthModal()" style="max-width: 300px;">Iniciar Sesión / Elegir Plan</button>
             </div>
         </div>
     </div>
 
-    <!-- Modal de Autenticación / Selección de Plan -->
+    <!-- Modal de Autenticación -->
     <div id="auth-modal" class="modal">
         <div class="modal-content">
             <span class="close-btn" onclick="closeAuthModal()">&times;</span>
@@ -243,6 +259,25 @@
         function closeAuthModal() {
             document.getElementById('auth-modal').style.display = 'none';
             document.getElementById('status-msg').innerText = '';
+        }
+
+        function evaluateCombination() {
+            const inputVal = document.getElementById('user-combination').value;
+            const resultDiv = document.getElementById('evaluation-result');
+            
+            if (!inputVal.trim()) {
+                resultDiv.innerHTML = '<span style="color: #dc2626; font-size: 13px; font-weight: bold;">Por favor ingresa números separados por comas.</span>';
+                return;
+            }
+
+            const numbers = inputVal.split(',').map(n => n.trim()).filter(n => n !== '');
+            
+            let html = '';
+            numbers.forEach(num => {
+                html += `<div class="melate-ball" style="width: 36px; height: 36px; font-size: 16px;">${num}</div>`;
+            });
+            
+            resultDiv.innerHTML = html;
         }
 
         async function checkUser() {
