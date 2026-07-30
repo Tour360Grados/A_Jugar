@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Mi Web App con Autenticación</title>
+    <title>¡A Jugar! - Estadísticas de Lotería</title>
     
     <!-- SDK de Supabase -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
@@ -13,20 +13,37 @@
             font-family: Arial, sans-serif;
             background-color: #f4f7f6;
             margin: 0;
-            padding: 50px;
+            padding: 0;
+        }
+        header {
+            background-color: #1e293b;
+            color: white;
+            padding: 15px 30px;
             display: flex;
-            justify-content: center;
+            justify-content: space-between;
             align-items: center;
-            height: 100vh;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+        header h1 {
+            margin: 0;
+            font-size: 20px;
+        }
+        .user-panel {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+        .main-container {
+            max-width: 900px;
+            margin: 40px auto;
+            padding: 20px;
         }
         .card {
             background: white;
             padding: 30px;
             border-radius: 8px;
-            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
-            width: 100%;
-            max-width: 400px;
-            text-align: center;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.05);
+            margin-bottom: 20px;
         }
         input {
             width: 100%;
@@ -37,9 +54,7 @@
             box-sizing: border-box;
         }
         button {
-            width: 100%;
-            padding: 10px;
-            margin: 5px 0;
+            padding: 10px 20px;
             border: none;
             border-radius: 4px;
             background-color: #2563eb;
@@ -56,99 +71,197 @@
         .secondary-btn:hover {
             background-color: #374151;
         }
+        .badge {
+            background-color: #dbeafe;
+            color: #1d4ed8;
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 12px;
+            font-weight: bold;
+        }
+        /* Estilos del Modal de Login */
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0,0,0,0.5);
+            justify-content: center;
+            align-items: center;
+        }
+        .modal-content {
+            background: white;
+            padding: 30px;
+            border-radius: 8px;
+            width: 100%;
+            max-width: 350px;
+            text-align: center;
+            position: relative;
+        }
+        .close-btn {
+            position: absolute;
+            top: 10px;
+            right: 15px;
+            font-size: 20px;
+            cursor: pointer;
+            color: #666;
+        }
+        #status-msg {
+            margin-top: 10px;
+            font-size: 13px;
+            font-weight: bold;
+        }
     </style>
 </head>
 <body>
 
-    <div class="card">
-        <!-- 1. Contenedor de Autenticación (Login / Registro) -->
-        <div id="auth-container">
-            <h2>Acceso a la Cuenta</h2>
-            <input type="email" id="email" placeholder="Correo electrónico">
-            <input type="password" id="password" placeholder="Contraseña">
-            <button onclick="signIn()">Iniciar Sesión</button>
-            <button onclick="signUp()" class="secondary-btn">Registrarse</button>
+    <!-- Barra Superior -->
+    <header>
+        <h1>¡A Jugar! 🎰</h1>
+        <div class="user-panel" id="header-user-panel">
+            <!-- Se llena dinámicamente con JS -->
         </div>
+    </header>
 
-        <!-- 2. Contenedor Principal (Visible solo cuando se inicia sesión) -->
-        <div id="app-container" style="display: none;">
-            <h2>¡Bienvenido!</h2>
-            <p><span id="user-email" style="font-weight: bold;"></span></p>
-            <p>Plan actual: <span id="user-tier" style="color: #2563eb; font-weight: bold;">Cargando...</span></p>
-            <button onclick="signOut()" class="secondary-btn">Cerrar Sesión</button>
+    <!-- Contenido Principal Visible para Todos (Freemium) -->
+    <div class="main-container">
+        <div class="card">
+            <h2>Bienvenido a la plataforma de análisis</h2>
+            <p>Aquí puedes consultar las estadísticas públicas y herramientas base de nuestra aplicación.</p>
+            <hr style="border: 0; border-top: 1px solid #eee; margin: 20px 0;">
+            <div style="background: #f8fafc; padding: 20px; border-radius: 6px; border-left: 4px solid #2563eb;">
+                <h3>📊 Vista Previa de Sorteos (Modo Libre)</h3>
+                <p>Las funciones avanzadas de predicción y algoritmos personalizados están reservadas para cuentas con membresía Oro o Premium.</p>
+                <button onclick="openAuthModal()">Iniciar Sesión / Registrarse para Acceder</button>
+            </div>
         </div>
     </div>
 
-    <!-- 3. Lógica de JavaScript -->
+    <!-- Modal de Autenticación -->
+    <div id="auth-modal" class="modal">
+        <div class="modal-content">
+            <span class="close-btn" onclick="closeAuthModal()">&times;</span>
+            <h2>Acceso a la Cuenta</h2>
+            <input type="email" id="email" placeholder="Correo electrónico">
+            <input type="password" id="password" placeholder="Contraseña">
+            <button onclick="signIn()" style="width: 100%; margin-top: 5px;">Iniciar Sesión</button>
+            <button onclick="signUp()" class="secondary-btn" style="width: 100%; margin-top: 5px;">Registrarse</button>
+            <div id="status-msg"></div>
+        </div>
+    </div>
+
+    <!-- Lógica de JavaScript -->
     <script>
         const SUPABASE_URL = 'https://jcvfndovnwfqacxuhegd.supabase.co';
         const SUPABASE_ANON_KEY = 'sb_publishable_C7L3U-1Wt78PtPog06WRgA_smUPA4AR';
         
         const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
-        // Verificar el estado de la sesión al cargar la página
+        function showMessage(msg, isError = false) {
+            const statusDiv = document.getElementById('status-msg');
+            statusDiv.style.color = isError ? '#dc2626' : '#2563eb';
+            statusDiv.innerText = msg;
+        }
+
+        function openAuthModal() {
+            document.getElementById('auth-modal').style.display = 'flex';
+        }
+
+        function closeAuthModal() {
+            document.getElementById('auth-modal').style.display = 'none';
+            document.getElementById('status-msg').innerText = '';
+        }
+
+        // Verificar sesión al cargar la página
         async function checkUser() {
-            const { data: { session } } = await supabase.auth.getSession();
-            
-            if (session) {
-                document.getElementById('auth-container').style.display = 'none';
-                document.getElementById('app-container').style.display = 'block';
-                document.getElementById('user-email').innerText = session.user.email;
-                loadUserTier(session.user.id);
-            } else {
-                document.getElementById('auth-container').style.display = 'block';
-                document.getElementById('app-container').style.display = 'none';
+            try {
+                const { data: { session }, error } = await supabase.auth.getSession();
+                if (error) throw error;
+                
+                const panel = document.getElementById('header-user-panel');
+                
+                if (session) {
+                    panel.innerHTML = `
+                        <span style="font-size: 14px;">${session.user.email}</span>
+                        <span class="badge" id="user-tier">PLAN: CARGANDO...</span>
+                        <button onclick="signOut()" class="secondary-btn" style="padding: 5px 10px; font-size: 12px;">Cerrar Sesión</button>
+                    `;
+                    loadUserTier(session.user.id);
+                } else {
+                    panel.innerHTML = `
+                        <button onclick="openAuthModal()" style="padding: 6px 15px; font-size: 13px;">Iniciar Sesión</button>
+                    `;
+                }
+            } catch (err) {
+                console.error('Error de sesión:', err.message);
             }
         }
 
-        // Función de Registro
         async function signUp() {
             const email = document.getElementById('email').value;
             const password = document.getElementById('password').value;
             
+            if (!email || !password) {
+                showMessage('Ingresa correo y contraseña', true);
+                return;
+            }
+
+            showMessage('Registrando...');
             const { data, error } = await supabase.auth.signUp({ email, password });
+            
             if (error) {
-                alert('Error en el registro: ' + error.message);
+                showMessage('Error: ' + error.message, true);
             } else {
-                alert('¡Registro exitoso! Ya puedes iniciar sesión.');
+                showMessage('¡Registro exitoso! Ya puedes iniciar sesión.');
             }
         }
 
-        // Función de Inicio de Sesión
         async function signIn() {
             const email = document.getElementById('email').value;
             const password = document.getElementById('password').value;
             
+            if (!email || !password) {
+                showMessage('Ingresa correo y contraseña', true);
+                return;
+            }
+
+            showMessage('Iniciando sesión...');
             const { data, error } = await supabase.auth.signInWithPassword({ email, password });
+            
             if (error) {
-                alert('Error al iniciar sesión: ' + error.message);
+                showMessage('Error: ' + error.message, true);
             } else {
+                closeAuthModal();
                 checkUser();
             }
         }
 
-        // Función de Cierre de Sesión
         async function signOut() {
             await supabase.auth.signOut();
             checkUser();
         }
 
-        // Consultar el plan del usuario en la base de datos
         async function loadUserTier(userId) {
-            const { data, error } = await supabase
-                .from('profiles')
-                .select('tier')
-                .eq('id', userId)
-                .single();
-                
-            if (data && data.tier) {
-                document.getElementById('user-tier').innerText = data.tier.toUpperCase();
-            } else {
-                document.getElementById('user-tier').innerText = 'FREE';
+            try {
+                const { data, error } = await supabase
+                    .from('profiles')
+                    .select('tier')
+                    .eq('id', userId)
+                    .single();
+                    
+                if (data && data.tier) {
+                    document.getElementById('user-tier').innerText = 'PLAN: ' + data.tier.toUpperCase();
+                } else {
+                    document.getElementById('user-tier').innerText = 'PLAN: FREE';
+                }
+            } catch (err) {
+                document.getElementById('user-tier').innerText = 'PLAN: FREE';
             }
         }
 
-        // Ejecutar al cargar la página
         window.onload = checkUser;
     </script>
 </body>
