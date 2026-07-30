@@ -1,4 +1,145 @@
-function renderizarRadar(historialMuestra) {
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>¡A Jugar! - Estadísticas y Análisis</title>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <style>
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+    body {
+      background-color: #0b111e;
+      color: #ffffff;
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      padding: 4px 2px;
+      display: flex;
+      justify-content: center;
+    }
+    .ticket-grid {
+      display: grid;
+      gap: 4px;
+      margin-bottom: 8px;
+    }
+    .ticket-cell {
+      background: #1e293b;
+      border: 1px solid #334155;
+      border-radius: 4px;
+      padding: 8px 4px;
+      text-align: center;
+      cursor: pointer;
+      font-size: 0.7rem;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+    }
+    .ticket-cell.hot { background: #b91c1c; border-color: #ef4444; }
+    .ticket-cell.cold { background: #1d4ed8; border-color: #3b82f6; }
+    .ticket-cell.suggested { border: 2px solid #22c55e; }
+    .count-badge { font-size: 0.55rem; color: #94a3b8; margin-top: 2px; }
+    .btn-action {
+      width: 100%;
+      padding: 8px;
+      border: none;
+      border-radius: 4px;
+      color: #fff;
+      font-weight: bold;
+      cursor: pointer;
+      margin-top: 4px;
+    }
+    .ball {
+      width: 26px;
+      height: 26px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 0.65rem;
+      font-weight: bold;
+      color: #fff;
+    }
+    .balls-container {
+      display: flex;
+      gap: 6px;
+      justify-content: center;
+      align-items: center;
+    }
+    .metric-row {
+      display: flex;
+      justify-content: space-between;
+      padding: 3px 0;
+      border-bottom: 1px solid #1e293b;
+      font-size: 0.68rem;
+    }
+    .status-ok { color: #22c55e; }
+    .status-out { color: #ef4444; }
+  </style>
+</head>
+<body>
+
+  <div id="app" style="width: 100%; max-width: 480px;">
+    <!-- Contenedor del Radar -->
+    <div id="radar-ticket-container"></div>
+    <div id="frecuencias-lista"></div>
+    <div id="rangos-metrics"></div>
+    <div id="sugerencia-result"></div>
+    <div id="mis-jugadas-lista"></div>
+  </div>
+
+  <script>
+    // --- VARIABLES GLOBALES Y CONFIGURACIÓN ---
+    let sugerenciaActual = [];
+    let maxNumActual = 39;
+    let datosHistoricos = [];
+    let calientesGlobales = [];
+    let friosGlobales = [];
+    let usuarioPlan = 'free';
+    let juegoActual = 'historico_melate';
+
+    const NOMBRES_JUEGOS = {
+      'historico_melate': 'Melate',
+      'melate_retro': 'Melate Retro',
+      'progol': 'Progol'
+    };
+
+    // Inicialización de Supabase (Reemplaza con tus credenciales reales si es necesario)
+    const supabaseUrl = 'TU_SUPABASE_URL';
+    const supabaseKey = 'TU_SUPABASE_ANON_KEY';
+    const db = supabase.createClient(supabaseUrl, supabaseKey);
+
+    // --- FUNCIONES AUXILIARES Y DE SOPORTE ---
+    function obtenerHistorialJuego(juego) {
+      return window.datosHistoricos || datosHistoricos;
+    }
+
+    function actualizarRadarSegunRango() {
+      if (typeof renderizarRadar === 'function' && typeof datosHistoricos !== 'undefined') {
+        renderizarRadar(datosHistoricos);
+      }
+    }
+
+    function verSugerenciaEnRadar(propuesta) {
+      sugerenciaActual = propuesta;
+      actualizarRadarSegunRango();
+    }
+
+    function verBoletoEnRadar(juego, nums) {
+      juegoActual = juego;
+      sugerenciaActual = nums;
+      actualizarRadarSegunRango();
+    }
+
+    function verificarEstadoPrueba() {}
+    function aplicarRestriccionesPlan() {}
+    async function cargarDatosCompletos() {}
+    function mostrarPistaZoomMovil() {}
+
+    // --- RENDERIZAR RADAR ---
+    function renderizarRadar(historialMuestra) {
       const container = document.getElementById('radar-ticket-container');
       if (!container || !historialMuestra || historialMuestra.length === 0) return;
 
@@ -179,13 +320,11 @@ function renderizarRadar(historialMuestra) {
           claseBall += ' cold';
         }
 
-        return `
-          <div class="freq-row">
-            <div class="${claseBall}" style="background: radial-gradient(circle at 30% 30%, var(--ball-light, #38bdf8), var(--ball-dark, #0369a1)); box-shadow: inset -3px -3px 6px rgba(0,0,0,0.6), 0 3px 6px rgba(0,0,0,0.4);">${num}</div>
-            <div class="freq-bar-container"><div class="freq-bar" style="width: ${porcentajeBarra}%;"></div></div>
-            <div class="freq-count">${veces}v</div>
-          </div>
-        `;
+        return '<div class="freq-row">' +
+          '<div class="' + claseBall + '" style="background: radial-gradient(circle at 30% 30%, var(--ball-light, #38bdf8), var(--ball-dark, #0369a1)); box-shadow: inset -3px -3px 6px rgba(0,0,0,0.6), 0 3px 6px rgba(0,0,0,0.4);">' + num + '</div>' +
+          '<div class="freq-bar-container"><div class="freq-bar" style="width: ' + porcentajeBarra + '%;"></div></div>' +
+          '<div class="freq-count">' + veces + 'v</div>' +
+          '</div>';
       }).join('');
 
       const listaEl = document.getElementById('frecuencias-lista');
@@ -210,20 +349,18 @@ function renderizarRadar(historialMuestra) {
 
       const metricsEl = document.getElementById('rangos-metrics');
       if (metricsEl) {
-        metricsEl.innerHTML = `
-          <div class="metric-row">
-            <span class="metric-label">Suma Mínima:</span>
-            <span class="metric-value" style="color: #38bdf8;">${minSuma} pts</span>
-          </div>
-          <div class="metric-row">
-            <span class="metric-label">Suma Máxima:</span>
-            <span class="metric-value" style="color: #ef4444;">${maxSuma} pts</span>
-          </div>
-          <div class="metric-row">
-            <span class="metric-label">Promedio Suma Total:</span>
-            <span class="metric-value status-ok">${promSuma} pts</span>
-          </div>
-        `;
+        metricsEl.innerHTML = '<div class="metric-row">' +
+          '<span class="metric-label">Suma Mínima:</span>' +
+          '<span class="metric-value" style="color: #38bdf8;">' + minSuma + ' pts</span>' +
+          '</div>' +
+          '<div class="metric-row">' +
+          '<span class="metric-label">Suma Máxima:</span>' +
+          '<span class="metric-value" style="color: #ef4444;">' + maxSuma + ' pts</span>' +
+          '</div>' +
+          '<div class="metric-row">' +
+          '<span class="metric-label">Promedio Suma Total:</span>' +
+          '<span class="metric-value status-ok">' + promSuma + ' pts</span>' +
+          '</div>';
       }
     }
 
@@ -311,42 +448,40 @@ function renderizarRadar(historialMuestra) {
           clase = ' cold';
           estilo3D = 'background: radial-gradient(circle at 30% 30%, #60a5fa, #1d4ed8); box-shadow: inset -3px -3px 6px rgba(0,0,0,0.6), 0 3px 6px rgba(0,0,0,0.4);';
         }
-        return `<div class="ball${clase}" style="${estilo3D}">${n}</div>`;
+        return '<div class="ball' + clase + '" style="' + estilo3D + '">' + n + '</div>';
       }).join('');
 
       let partesTemp = [];
-      if (calientesCount > 0) partesTemp.push(`${calientesCount} ${calientesCount === 1 ? 'número caliente' : 'números calientes'}`);
-      if (tibiosCount > 0) partesTemp.push(`${tibiosCount} ${tibiosCount === 1 ? 'número tibio' : 'números tibios'}`);
-      if (friosCount > 0) partesTemp.push(`${friosCount} ${friosCount === 1 ? 'número frío' : 'números fríos'}`);
+      if (calientesCount > 0) partesTemp.push(calientesCount + (calientesCount === 1 ? ' número caliente' : ' números calientes'));
+      if (tibiosCount > 0) partesTemp.push(tibiosCount + (tibiosCount === 1 ? ' número tibio' : ' números tibios'));
+      if (friosCount > 0) partesTemp.push(friosCount + (friosCount === 1 ? ' número frío' : ' números fríos'));
 
-      let textoDescriptivo = `Esta combinación para <strong>${NOMBRES_JUEGOS[juegoActual]}</strong> incluye ${partesTemp.join(', ')}, ${paresCount} pares y ${imparesCount} impares, con una suma total de <strong>${suma} pts</strong> (${sumaOk ? 'en rango aceptable' : 'fuera de rango'}).`;
+      let textoDescriptivo = 'Esta combinación para <strong>' + NOMBRES_JUEGOS[juegoActual] + '</strong> incluye ' + partesTemp.join(', ') + ', ' + paresCount + ' pares y ' + imparesCount + ' impares, con una suma total de <strong>' + suma + ' pts</strong> (' + (sumaOk ? 'en rango aceptable' : 'fuera de rango') + ').';
 
-      document.getElementById('sugerencia-result').innerHTML = `
-        <div class="balls-container" style="margin-bottom: 6px;">${esferasHtml}</div>
-        <div style="background: #0f172a; padding: 6px; border-radius: 5px; border: 1px solid #1e293b; margin-bottom: 6px; font-size: 0.68rem; line-height: 1.3; color: #cbd5e1; text-align: left;">
-          💡 ${textoDescriptivo}
-        </div>
-        <div style="background: #0f172a; padding: 5px; border-radius: 5px; border: 1px solid #1e293b; margin-bottom: 5px; font-size: 0.7rem;">
-          <div class="metric-row" style="border:none; padding:0;">
-            <span class="metric-label">Suma Total:</span>
-            <span class="metric-value ${sumaOk ? 'status-ok' : 'status-out'}">${suma} pts (${sumaOk ? 'En Rango' : 'Fuera'})</span>
-          </div>
-          <div class="metric-row" style="border:none; padding:2px 0 0 0;">
-            <span class="metric-label">Validación Histórica:</span>
-            <span class="metric-value" style="color: ${valHist.repetido ? '#ef4444' : '#22c55e'};">
-              ${valHist.repetido ? `Salió en sorteo #${valHist.sorteoEncontrado}` : `✅ ¡Nunca ha salido!`}
-            </span>
-          </div>
-        </div>
-        <button class="btn-action" style="background: #0284c7; margin-bottom: 4px;" onclick="verSugerenciaEnRadar([${propuesta.join(',')}])">🎯 Ver en Radar</button>
-        <button class="btn-action" style="background: #10b981;" onclick="guardarSugerenciaDirecta('${propuesta.join(',')}')">💾 Guardar Boleto</button>
-        <div id="msg-guardar-sugerencia" style="margin-top: 4px; font-size: 0.65rem; text-align: center;"></div>
-      `;
+      document.getElementById('sugerencia-result').innerHTML = '<div class="balls-container" style="margin-bottom: 6px;">' + esferasHtml + '</div>' +
+        '<div style="background: #0f172a; padding: 6px; border-radius: 5px; border: 1px solid #1e293b; margin-bottom: 6px; font-size: 0.68rem; line-height: 1.3; color: #cbd5e1; text-align: left;">' +
+        '💡 ' + textoDescriptivo +
+        '</div>' +
+        '<div style="background: #0f172a; padding: 5px; border-radius: 5px; border: 1px solid #1e293b; margin-bottom: 5px; font-size: 0.7rem;">' +
+        '<div class="metric-row" style="border:none; padding:0;">' +
+        '<span class="metric-label">Suma Total:</span>' +
+        '<span class="metric-value ' + (sumaOk ? 'status-ok' : 'status-out') + '">' + suma + ' pts (' + (sumaOk ? 'En Rango' : 'Fuera') + ')</span>' +
+        '</div>' +
+        '<div class="metric-row" style="border:none; padding:2px 0 0 0;">' +
+        '<span class="metric-label">Validación Histórica:</span>' +
+        '<span class="metric-value" style="color: ' + (valHist.repetido ? '#ef4444' : '#22c55e') + ';">' +
+        (valHist.repetido ? 'Salió en sorteo #' + valHist.sorteoEncontrado : '✅ ¡Nunca ha salido!') +
+        '</span>' +
+        '</div>' +
+        '</div>' +
+        '<button class="btn-action" style="background: #0284c7; margin-bottom: 4px;" onclick="verSugerenciaEnRadar([' + propuesta.join(',') + '])">🎯 Ver en Radar</button>' +
+        '<button class="btn-action" style="background: #10b981;" onclick="guardarSugerenciaDirecta(\'' + propuesta.join(',') + '\')">💾 Guardar Boleto</button>' +
+        '<div id="msg-guardar-sugerencia" style="margin-top: 4px; font-size: 0.65rem; text-align: center;"></div>';
     }
 
     async function guardarSugerenciaDirecta(numsStr) {
       const numerosArr = numsStr.split(',').map(Number);
-      const alias = prompt('Nombre o alias para este boleto:', `Boleto ${NOMBRES_JUEGOS[juegoActual]}`);
+      const alias = prompt('Nombre o alias para este boleto:', 'Boleto ' + NOMBRES_JUEGOS[juegoActual]);
       if (alias === null) return;
 
       const { error } = await db.from('mis_jugadas').insert([
@@ -355,7 +490,7 @@ function renderizarRadar(historialMuestra) {
 
       const msgEl = document.getElementById('msg-guardar-sugerencia') || document.getElementById('msg-guardar-radar');
       if (msgEl) {
-        msgEl.innerHTML = error ? `<span style="color:#ef4444;">Error: ${error.message}</span>` : `<span style="color:#22c55e;">¡Guardado con éxito! 🎟️</span>`;
+        msgEl.innerHTML = error ? '<span style="color:#ef4444;">Error: ' + error.message + '</span>' : '<span style="color:#22c55e;">¡Guardado con éxito! 🎟️</span>';
       }
       if (document.getElementById('tab-jugadas').classList.contains('active')) {
         cargarMisJugadas();
@@ -404,7 +539,7 @@ function renderizarRadar(historialMuestra) {
         .order('fecha_registro', { ascending: false });
 
       if (error || !data || data.length === 0) {
-        container.innerHTML = `<div style="color:#8c9ba5; font-size:0.68rem; padding:6px 0; text-align:center;">No hay jugadas guardadas.</div>`;
+        container.innerHTML = '<div style="color:#8c9ba5; font-size:0.68rem; padding:6px 0; text-align:center;">No hay jugadas guardadas.</div>';
         return;
       }
 
@@ -415,58 +550,50 @@ function renderizarRadar(historialMuestra) {
         const nombreJuegoTag = NOMBRES_JUEGOS[j.juego] || 'Melate';
         
         let estadoExactoHtml = analisis.aciertos6 > 0 
-          ? `<span style="color:#ef4444;">Salió en #${analisis.sorteos6.join(', #')}</span>` 
-          : `<span style="color:#22c55e;">✅ Nunca ha salido (6/6)</span>`;
+          ? '<span style="color:#ef4444;">Salió en #' + analisis.sorteos6.join(', #') + '</span>' 
+          : '<span style="color:#22c55e;">✅ Nunca ha salido (6/6)</span>';
 
         let detallesAciertosHtml = '';
         if (analisis.aciertos5 > 0 || analisis.aciertos4 > 0) {
-          detallesAciertosHtml += `<div style="margin-top: 4px; display: flex; flex-direction: column; gap: 2px;">`;
+          detallesAciertosHtml += '<div style="margin-top: 4px; display: flex; flex-direction: column; gap: 2px;">';
           
           analisis.detalles5.forEach(d => {
-            detallesAciertosHtml += `
-              <div style="font-size: 0.55rem; color: #38bdf8; background: #0b111e; padding: 2px 4px; border-radius: 3px; border: 1px solid #1e293b;">
-                ✦ <b>5 aciertos</b> (Sorteo #${d.sorteo}): <span style="color:#fff;">[ ${d.numeros.join(', ')} ]</span>
-              </div>
-            `;
+            detallesAciertosHtml += '<div style="font-size: 0.55rem; color: #38bdf8; background: #0b111e; padding: 2px 4px; border-radius: 3px; border: 1px solid #1e293b;">' +
+              '✦ <b>5 aciertos</b> (Sorteo #' + d.sorteo + '): <span style="color:#fff;">[ ' + d.numeros.join(', ') + ' ]</span>' +
+              '</div>';
           });
 
           analisis.detalles4.forEach(d => {
-            detallesAciertosHtml += `
-              <div style="font-size: 0.55rem; color: #eab308; background: #0b111e; padding: 2px 4px; border-radius: 3px; border: 1px solid #1e293b;">
-                ✦ <b>4 aciertos</b> (Sorteo #${d.sorteo}): <span style="color:#fff;">[ ${d.numeros.join(', ')} ]</span>
-              </div>
-            `;
+            detallesAciertosHtml += '<div style="font-size: 0.55rem; color: #eab308; background: #0b111e; padding: 2px 4px; border-radius: 3px; border: 1px solid #1e293b;">' +
+              '✦ <b>4 aciertos</b> (Sorteo #' + d.sorteo + '): <span style="color:#fff;">[ ' + d.numeros.join(', ') + ' ]</span>' +
+              '</div>';
           });
 
-          detallesAciertosHtml += `</div>`;
+          detallesAciertosHtml += '</div>';
         }
 
-        htmlAcumulado += `
-          <div style="background:#0f172a; padding:6px; border-radius:5px; margin-bottom:5px; border: 1px solid #1e293b; position:relative;">
-            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:2px;">
-              <div style="display:flex; align-items:center; gap:4px; overflow:hidden;">
-                <strong style="font-size:0.68rem; color:#38bdf8; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">${j.alias}</strong>
-                <span style="font-size:0.52rem; background:#1e293b; color:#eab308; padding:1px 4px; border-radius:3px; border:1px solid #334155; white-space:nowrap;">${nombreJuegoTag}</span>
-              </div>
-              <div style="display:flex; align-items:center; gap:6px;">
-                <div style="font-size:0.58rem; white-space:nowrap;">
-                  ${estadoExactoHtml}
-                </div>
-                <button onclick="eliminarJugada('${j.id}')" style="background:transparent; border:none; cursor:pointer; font-size:0.85rem; padding:0 2px;" title="Eliminar boleto">🗑️</button>
-              </div>
-            </div>
-            <div class="balls-container" style="justify-content:flex-start; gap:4px; margin-bottom: 4px;">
-              ${j.numeros.map(n => `<div class="ball" style="width:22px; height:22px; font-size:0.55rem; background: radial-gradient(circle at 30% 30%, #38bdf8, #0369a1); box-shadow: inset -2px -2px 4px rgba(0,0,0,0.6), 0 2px 4px rgba(0,0,0,0.4);">${n}</div>`).join('')}
-            </div>
-            <div style="display:flex; justify-content:space-between; align-items:center; font-size:0.58rem; background:#161f30; padding:3px 5px; border-radius:4px; border:1px solid #1e293b; color:#94a3b8; margin-bottom: 4px;">
-              <span>🎯 Parciales históricos:</span>
-              <span style="color:#38bdf8;"><strong>5 aciertos:</strong> ${analisis.aciertos5}v</span>
-              <span style="color:#eab308;"><strong>4 aciertos:</strong> ${analisis.aciertos4}v</span>
-            </div>
-            ${detallesAciertosHtml}
-            <button class="btn-action" style="background: #0284c7; font-size: 0.65rem; padding: 5px; margin-top: 4px;" onclick="verBoletoEnRadar('${j.juego}', [${j.numeros.join(',')}])">🎯 Ver en Radar</button>
-          </div>
-        `;
+        htmlAcumulado += '<div style="background:#0f172a; padding:6px; border-radius:5px; margin-bottom:5px; border: 1px solid #1e293b; position:relative;">' +
+          '<div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:2px;">' +
+          '<div style="display:flex; align-items:center; gap:4px; overflow:hidden;">' +
+          '<strong style="font-size:0.68rem; color:#38bdf8; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">' + j.alias + '</strong>' +
+          '<span style="font-size:0.52rem; background:#1e293b; color:#eab308; padding:1px 4px; border-radius:3px; border:1px solid #334155; white-space:nowrap;">' + nombreJuegoTag + '</span>' +
+          '</div>' +
+          '<div style="display:flex; align-items:center; gap:6px;">' +
+          '<div style="font-size:0.58rem; white-space:nowrap;">' + estadoExactoHtml + '</div>' +
+          '<button onclick="eliminarJugada(\'' + j.id + '\')" style="background:transparent; border:none; cursor:pointer; font-size:0.85rem; padding:0 2px;" title="Eliminar boleto">🗑️</button>' +
+          '</div>' +
+          '</div>' +
+          '<div class="balls-container" style="justify-content:flex-start; gap:4px; margin-bottom: 4px;">' +
+          j.numeros.map(n => '<div class="ball" style="width:22px; height:22px; font-size:0.55rem; background: radial-gradient(circle at 30% 30%, #38bdf8, #0369a1); box-shadow: inset -2px -2px 4px rgba(0,0,0,0.6), 0 2px 4px rgba(0,0,0,0.4);">' + n + '</div>').join('') +
+          '</div>' +
+          '<div style="display:flex; justify-content:space-between; align-items:center; font-size:0.58rem; background:#161f30; padding:3px 5px; border-radius:4px; border:1px solid #1e293b; color:#94a3b8; margin-bottom: 4px;">' +
+          '<span>🎯 Parciales históricos:</span>' +
+          '<span style="color:#38bdf8;"><strong>5 aciertos:</strong> ' + analisis.aciertos5 + 'v</span>' +
+          '<span style="color:#eab308;"><strong>4 aciertos:</strong> ' + analisis.aciertos4 + 'v</span>' +
+          '</div>' +
+          detallesAciertosHtml +
+          '<button class="btn-action" style="background: #0284c7; font-size: 0.65rem; padding: 5px; margin-top: 4px;" onclick="verBoletoEnRadar(\'' + j.juego + '\', [' + j.numeros.join(',') + '])">🎯 Ver en Radar</button>' +
+          '</div>';
       }
       container.innerHTML = htmlAcumulado;
     }
@@ -486,3 +613,6 @@ function renderizarRadar(historialMuestra) {
       await cargarDatosCompletos();
       setTimeout(mostrarPistaZoomMovil, 1200);
     });
+  </script>
+</body>
+</html>
